@@ -35,12 +35,21 @@ func (w *WorkspaceManager) GetOrCreateTaskWorkspace(taskID uint, existingPath st
 	if err := os.MkdirAll(w.baseDir, 0777); err != nil {
 		return "", fmt.Errorf("failed to create base directory: %v", err)
 	}
+	// 确保base目录有正确的权限
+	if err := os.Chmod(w.baseDir, 0777); err != nil {
+		return "", fmt.Errorf("failed to set base directory permissions: %v", err)
+	}
 
 	dirName := fmt.Sprintf("task-%d-%d", taskID, time.Now().Unix())
 	workspacePath := filepath.Join(w.baseDir, dirName)
 
 	if err := os.MkdirAll(workspacePath, 0777); err != nil {
 		return "", fmt.Errorf("failed to create workspace directory: %v", err)
+	}
+
+	// 显式设置目录权限为0777，确保在Docker容器中也能正确设置权限
+	if err := os.Chmod(workspacePath, 0777); err != nil {
+		return "", fmt.Errorf("failed to set workspace directory permissions: %v", err)
 	}
 
 	return workspacePath, nil
@@ -238,6 +247,10 @@ func (w *WorkspaceManager) ResetWorkspaceToCleanState(workspacePath string) erro
 		}
 		if err := os.MkdirAll(workspacePath, 0777); err != nil {
 			return fmt.Errorf("failed to recreate workspace: %v", err)
+		}
+		// 显式设置目录权限为0777，确保在Docker容器中也能正确设置权限
+		if err := os.Chmod(workspacePath, 0777); err != nil {
+			return fmt.Errorf("failed to set recreated workspace directory permissions: %v", err)
 		}
 		return nil
 	}
