@@ -23,8 +23,7 @@ import {
   XCircle,
   AlertCircle,
   Terminal,
-  Eye,
-  EyeOff,
+  RefreshCw,
 } from "lucide-react";
 import { taskExecutionLogsApi } from "@/lib/api/task-execution-logs";
 import type { TaskExecutionLog } from "@/types/task-execution-log";
@@ -54,7 +53,6 @@ export function TaskExecutionLog({
   const [actionLoading, setActionLoading] = useState<"cancel" | "retry" | null>(
     null
   );
-  const [showLogs, setShowLogs] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [retryDialogOpen, setRetryDialogOpen] = useState(false);
@@ -230,6 +228,17 @@ export function TaskExecutionLog({
           </div>
 
           <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={loadExecutionLog}
+              disabled={loading}
+              className="text-foreground hover:text-foreground"
+            >
+              <RefreshCw className={`w-4 h-4 mr-1 ${loading ? "animate-spin" : ""}`} />
+              {t("common.refresh")}
+            </Button>
+
             {canCancel(conversationStatus) && (
               <Button
                 variant="outline"
@@ -332,36 +341,17 @@ export function TaskExecutionLog({
 
         {executionLog.execution_logs && (
           <div>
-            <div className="flex items-center justify-between mb-2">
+            <div className="mb-2">
               <span className="font-medium text-foreground">
                 {t("taskConversation.execution.info.executionLogs")}
               </span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowLogs(!showLogs)}
-              >
-                {showLogs ? (
-                  <>
-                    <EyeOff className="w-4 h-4 mr-1" />
-                    {t("taskConversation.execution.actions.hideLogs")}
-                  </>
-                ) : (
-                  <>
-                    <Eye className="w-4 h-4 mr-1" />
-                    {t("taskConversation.execution.actions.showLogs")}
-                  </>
-                )}
-              </Button>
             </div>
 
-            {showLogs && (
-              <div className="p-4 bg-black text-green-400 rounded-lg font-mono text-xs overflow-x-auto max-h-80 overflow-y-auto">
-                <pre className="whitespace-pre-wrap">
-                  {executionLog.execution_logs}
-                </pre>
-              </div>
-            )}
+            <div className="p-4 bg-black text-green-400 rounded-lg font-mono text-xs overflow-x-auto max-h-80 overflow-y-auto">
+              <pre className="whitespace-pre-wrap">
+                {executionLog.execution_logs}
+              </pre>
+            </div>
           </div>
         )}
       </CardContent>
