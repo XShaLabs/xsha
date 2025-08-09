@@ -35,7 +35,7 @@ type BatchUpdateConfigsRequest struct {
 // @Produce json
 // @Security BearerAuth
 // @Success 200 {object} object{configs=[]object} "All configurations"
-// @Router /system-configs [get]
+// @Router /settings [get]
 func (h *SystemConfigHandlers) ListAllConfigs(c *gin.Context) {
 	lang := middleware.GetLangFromContext(c)
 
@@ -63,7 +63,7 @@ func (h *SystemConfigHandlers) ListAllConfigs(c *gin.Context) {
 // @Param configs body BatchUpdateConfigsRequest true "Configuration updates"
 // @Success 200 {object} object{message=string} "Configurations updated successfully"
 // @Failure 400 {object} object{error=string} "Request parameter error"
-// @Router /system-configs [put]
+// @Router /settings [put]
 func (h *SystemConfigHandlers) BatchUpdateConfigs(c *gin.Context) {
 	lang := middleware.GetLangFromContext(c)
 

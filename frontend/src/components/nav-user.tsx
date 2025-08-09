@@ -1,11 +1,6 @@
-import {
-  IconDotsVertical,
-  IconLogout,
-  IconLanguage,
-} from "@tabler/icons-react";
+import { ChevronsUpDown, LogOut, Languages } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -68,17 +63,15 @@ export function NavUser() {
             >
               <Avatar className="h-8 w-8 rounded-lg">
                 <AvatarImage src="" alt={user} />
-                <AvatarFallback className="rounded-lg">
+                <AvatarFallback className="rounded-lg uppercase">
                   {userInitials}
                 </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{user}</span>
-                <span className="text-muted-foreground truncate text-xs">
-                  {t("navigation.profile")}
-                </span>
+                <span className="truncate text-xs">Admin</span>
               </div>
-              <IconDotsVertical className="ml-auto size-4" />
+              <ChevronsUpDown className="ml-auto size-4" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
@@ -91,31 +84,21 @@ export function NavUser() {
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
                   <AvatarImage src="" alt={user} />
-                  <AvatarFallback className="rounded-lg">
+                  <AvatarFallback className="rounded-lg uppercase">
                     {userInitials}
                   </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{user}</span>
-                  <span className="text-muted-foreground truncate text-xs">
-                    {t("navigation.profile")}
-                  </span>
+                  <span className="truncate text-xs">Admin</span>
                 </div>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              {/* <DropdownMenuItem>
-                <IconUserCircle />
-                {t("navigation.profile")}
-              </DropdownMenuItem> */}
-              {/* <DropdownMenuItem>
-                <IconSettings />
-                {t("navigation.settings")}
-              </DropdownMenuItem> */}
               <DropdownMenuSub>
                 <DropdownMenuSubTrigger>
-                  <IconLanguage />
+                  <Languages />
                   {t("navigation.language")}
                 </DropdownMenuSubTrigger>
                 <DropdownMenuSubContent>
@@ -138,7 +121,7 @@ export function NavUser() {
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout}>
-              <IconLogout />
+              <LogOut />
               {t("auth.logout")}
             </DropdownMenuItem>
           </DropdownMenuContent>

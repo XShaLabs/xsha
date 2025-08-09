@@ -35,6 +35,10 @@
     "docker_image_placeholder": "Search by Docker image name"
   },
   "stats": {
+    "total": "Total Environments",
+    "docker_environments": "Docker Environments",
+    "total_cpu": "Total CPU",
+    "total_memory": "Total Memory",
     "cores": "cores",
     "memory": "Memory"
   },
@@ -56,12 +60,19 @@
     "cpu_limit_invalid": "CPU limit must be between 0.1-16 cores",
     "memory_limit_invalid": "Memory limit must be between 128-32768MB"
   },
+  "createAndCustomize": "Create and configure environments",
+  "createHelpText": "Set up development environments with custom Docker images, resource limits, and environment variables.",
+  "editAndUpdate": "Edit and update configuration",
+  "editHelpText": "Modify environment settings, adjust resource limits, and manage environment variables.",
+  "configurationHelp": "Environment configurations are applied when containers are created or restarted.",
   "env_vars": {
+    "title": "Environment Variables",
     "add_new": "Add Environment Variable",
     "current": "Current Environment Variables",
     "key": "Variable Name",
     "value": "Variable Value",
     "add": "Add",
+    "empty_message": "No environment variables configured. Add one below.",
     "key_required": "Variable name cannot be empty",
     "key_exists": "Variable name already exists"
   }

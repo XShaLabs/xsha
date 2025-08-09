@@ -28,13 +28,13 @@ export const ROUTES = {
   projectCreate: "/projects/create",
   projectEdit: (id: number) => `/projects/${id}/edit`,
 
-  devEnvironments: "/dev-environments",
-  devEnvironmentCreate: "/dev-environments/create",
-  devEnvironmentEdit: (id: number) => `/dev-environments/${id}/edit`,
+  devEnvironments: "/environments",
+  devEnvironmentCreate: "/environments/create",
+  devEnvironmentEdit: (id: number) => `/environments/${id}/edit`,
 
-  gitCredentials: "/git-credentials",
-  gitCredentialCreate: "/git-credentials/create",
-  gitCredentialEdit: (id: number) => `/git-credentials/${id}/edit`,
+  gitCredentials: "/credentials",
+  gitCredentialCreate: "/credentials/create",
+  gitCredentialEdit: (id: number) => `/credentials/${id}/edit`,
 
   projectTasks: (projectId: number) => `/projects/${projectId}/tasks`,
   taskCreate: (projectId: number) => `/projects/${projectId}/tasks/create`,
@@ -47,9 +47,9 @@ export const ROUTES = {
   taskGitDiff: (projectId: number, taskId: number) =>
     `/projects/${projectId}/tasks/${taskId}/git-diff`,
 
-  adminLogs: "/admin/logs",
 
-  systemConfigs: "/system-configs",
+
+  systemConfigs: "/settings",
 
   settings: "/settings",
   profile: "/profile",

@@ -1,10 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
 import { usePageTitle } from "@/hooks/usePageTitle";
+import { useBreadcrumb } from "@/contexts/BreadcrumbContext";
 import { TaskFormCreate } from "@/components/TaskFormCreate";
+import {
+  Section,
+  SectionGroup,
+  SectionHeader,
+  SectionTitle,
+} from "@/components/content/section";
+import {
+  EmptyStateContainer,
+  EmptyStateTitle,
+  EmptyStateDescription,
+} from "@/components/content/empty-state";
 import { apiService } from "@/lib/api/index";
 import { logError } from "@/lib/errors";
 import { toast } from "sonner";
@@ -15,6 +25,7 @@ const TaskCreatePage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { projectId } = useParams<{ projectId: string }>();
+  const { setItems } = useBreadcrumb();
 
   const [currentProject, setCurrentProject] = useState<Project | null>(null);
 
@@ -37,6 +48,22 @@ const TaskCreatePage: React.FC = () => {
     loadCurrentProject();
   }, [projectId]);
 
+  // Set breadcrumb items
+  useEffect(() => {
+    if (currentProject) {
+      setItems([
+        { type: "link", label: t("navigation.projects"), href: "/projects" },
+        { type: "link", label: currentProject.name, href: `/projects/${projectId}/tasks` },
+        { type: "page", label: t("tasks.create") }
+      ]);
+    }
+
+    // Cleanup when component unmounts
+    return () => {
+      setItems([]);
+    };
+  }, [currentProject, projectId, setItems, t]);
+
   const handleSubmit = async (data: TaskFormData | { title: string }) => {
     try {
       const projectIdNum = projectId ? parseInt(projectId, 10) : undefined;
@@ -57,32 +84,28 @@ const TaskCreatePage: React.FC = () => {
     }
   };
 
-  const handleCancel = () => {
-    navigate(`/projects/${projectId}/tasks`);
-  };
-
   return (
-    <div className="container mx-auto p-6">
-      <div className="max-w-2xl mx-auto">
-        <div className="mb-6">
-          <Button
-            variant="default"
-            onClick={() => navigate(`/projects/${projectId}/tasks`)}
-            className="mb-4"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            {t("common.back")}
-          </Button>
-        </div>
-
-        <TaskFormCreate
-          defaultProjectId={projectId ? parseInt(projectId, 10) : undefined}
-          currentProject={currentProject || undefined}
-          onSubmit={handleSubmit}
-          onCancel={handleCancel}
-        />
-      </div>
-    </div>
+    <SectionGroup>
+        <Section>
+          <SectionHeader>
+            <SectionTitle>{t("tasks.create")}</SectionTitle>
+          </SectionHeader>
+          <TaskFormCreate
+            defaultProjectId={projectId ? parseInt(projectId, 10) : undefined}
+            currentProject={currentProject || undefined}
+            onSubmit={handleSubmit}
+          />
+        </Section>
+        
+        <Section>
+          <EmptyStateContainer>
+            <EmptyStateTitle>{t("tasks.form.helpTitle")}</EmptyStateTitle>
+            <EmptyStateDescription>
+              {t("tasks.form.helpDescription")}
+            </EmptyStateDescription>
+          </EmptyStateContainer>
+        </Section>
+      </SectionGroup>
   );
 };
 

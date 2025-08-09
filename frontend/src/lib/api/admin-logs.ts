@@ -67,6 +67,12 @@ export const adminLogsApi = {
     const searchParams = new URLSearchParams();
 
     if (params?.username) searchParams.append("username", params.username);
+    if (params?.ip) searchParams.append("ip", params.ip);
+    if (params?.success !== undefined)
+      searchParams.append("success", params.success.toString());
+    if (params?.start_time)
+      searchParams.append("start_time", params.start_time);
+    if (params?.end_time) searchParams.append("end_time", params.end_time);
     if (params?.page) searchParams.append("page", params.page.toString());
     if (params?.page_size)
       searchParams.append("page_size", params.page_size.toString());

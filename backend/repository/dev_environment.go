@@ -69,3 +69,50 @@ func (r *devEnvironmentRepository) Update(env *database.DevEnvironment) error {
 func (r *devEnvironmentRepository) Delete(id uint) error {
 	return r.db.Where("id = ?", id).Delete(&database.DevEnvironment{}).Error
 }
+
+func (r *devEnvironmentRepository) GetStats() (map[string]interface{}, error) {
+	stats := make(map[string]interface{})
+
+	// Total count
+	var totalCount int64
+	if err := r.db.Model(&database.DevEnvironment{}).Count(&totalCount).Error; err != nil {
+		return nil, err
+	}
+	stats["total"] = totalCount
+
+	// Count by type
+	var typeStats []struct {
+		Type  string
+		Count int64
+	}
+	if err := r.db.Model(&database.DevEnvironment{}).
+		Select("type, count(*) as count").
+		Group("type").
+		Scan(&typeStats).Error; err != nil {
+		return nil, err
+	}
+
+	for _, stat := range typeStats {
+		stats[stat.Type] = stat.Count
+	}
+
+	// Total CPU cores allocated
+	var totalCPU float64
+	if err := r.db.Model(&database.DevEnvironment{}).
+		Select("COALESCE(SUM(cpu_limit), 0)").
+		Scan(&totalCPU).Error; err != nil {
+		return nil, err
+	}
+	stats["total_cpu"] = totalCPU
+
+	// Total memory allocated (in MB)
+	var totalMemory int64
+	if err := r.db.Model(&database.DevEnvironment{}).
+		Select("COALESCE(SUM(memory_limit), 0)").
+		Scan(&totalMemory).Error; err != nil {
+		return nil, err
+	}
+	stats["total_memory"] = totalMemory
+
+	return stats, nil
+}

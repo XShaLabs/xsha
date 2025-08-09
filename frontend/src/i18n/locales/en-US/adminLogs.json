@@ -3,6 +3,11 @@
   "description": "View system operation logs, login records and statistics",
   "operationLogs": {
     "title": "Operation Logs",
+    "description": "View and manage system operation logs including CRUD operations",
+    "overview": {
+      "title": "Operations Overview",
+      "description": "Click on metrics to filter operations by type or status"
+    },
     "columns": {
       "id": "ID",
       "username": "User",
@@ -43,7 +48,16 @@
   },
   "loginLogs": {
     "title": "Login Logs",
+    "description": "View user authentication logs including successful and failed login attempts",
+    "overview": {
+      "title": "Login Overview",
+      "description": "Click on metrics to filter login attempts by status"
+    },
     "columns": {
+      "status": "Status",
+      "username": "User",
+      "ip": "IP Address",
+      "time": "Time",
       "reason": "Failure Reason",
       "userAgent": "User Agent"
     },
@@ -56,29 +70,45 @@
       "invalidUsername": "Invalid username",
       "invalidPassword": "Invalid password"
     },
+    "metrics": {
+      "totalAttempts": "Total Attempts",
+      "successRate": "Success Rate"
+    },
     "filters": {
       "all": "Filter Options",
-      "username": "Username"
+      "username": "Username",
+      "ip": "IP Address",
+      "status": "Status",
+      "startDate": "Start Date",
+      "endDate": "End Date"
     },
     "messages": {
       "noLogs": "No login records"
     }
   },
+  "common": {
+    "search": "Search",
+    "refresh": "Refresh",
+    "apply": "Apply",
+    "reset": "Reset",
+    "total": "Total",
+    "items": "items",
+    "page": "Page",
+    "detail": "Detail"
+  },
   "stats": {
     "title": "Operation Statistics",
+    "description": "View comprehensive statistics about system operations and resource usage",
     "operationStats": "Operation Type Statistics",
+    "operationBreakdown": "Detailed breakdown of operations by type",
     "resourceStats": "Resource Type Statistics",
+    "resourceBreakdown": "Resource access patterns and frequency",
     "timeRange": "Time Range",
-    "noStatsAvailable": "No statistics available"
-  },
-  "common": {
-    "refresh": "Refresh",
-    "detail": "Detail",
-    "search": "Filter",
-    "reset": "Reset",
-    "apply": "Apply",
-    "page": "Page",
-    "total": "Total",
-    "items": "items"
+    "noStatsAvailable": "No statistics available",
+    "totalOperations": "Total Operations",
+    "totalResources": "Total Resources",
+    "selectDateRange": "Select Date Range",
+    "selectStartDate": "Select start date",
+    "selectEndDate": "Select end date"
   }
 }

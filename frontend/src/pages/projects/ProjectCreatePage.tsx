@@ -1,43 +1,68 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
 import { usePageTitle } from "@/hooks/usePageTitle";
+import { useBreadcrumb } from "@/contexts/BreadcrumbContext";
 import { ProjectForm } from "@/components/ProjectForm";
+import {
+  EmptyStateContainer,
+  EmptyStateTitle,
+  EmptyStateDescription,
+  Section,
+  SectionGroup,
+  SectionHeader,
+  SectionTitle,
+} from "@/components/content";
 import type { Project } from "@/types/project";
 
 const ProjectCreatePage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { setItems } = useBreadcrumb();
 
   usePageTitle(t("projects.create"));
+
+  // Set breadcrumb navigation
+  useEffect(() => {
+    setItems([
+      {
+        type: "link",
+        label: t("projects.list"),
+        href: "/projects",
+      },
+      {
+        type: "page",
+        label: t("projects.create"),
+      },
+    ]);
+
+    // Cleanup when component unmounts
+    return () => {
+      setItems([]);
+    };
+  }, [setItems, t]);
 
   const handleSubmit = (_project: Project) => {
     navigate("/projects");
   };
 
-  const handleCancel = () => {
-    navigate("/projects");
-  };
-
   return (
-    <div className="container mx-auto p-6">
-      <div className="max-w-2xl mx-auto">
-        <div className="mb-6">
-          <Button
-            variant="default"
-            onClick={() => navigate("/projects")}
-            className="mb-4"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            {t("common.back")}
-          </Button>
-        </div>
-
-        <ProjectForm onSubmit={handleSubmit} onCancel={handleCancel} />
-      </div>
-    </div>
+    <SectionGroup>
+      <Section>
+        <SectionHeader>
+          <SectionTitle>{t("projects.create")}</SectionTitle>
+        </SectionHeader>
+        <ProjectForm onSubmit={handleSubmit} />
+      </Section>
+      <Section>
+        <EmptyStateContainer>
+          <EmptyStateTitle>{t("projects.createAndCustomize")}</EmptyStateTitle>
+          <EmptyStateDescription>
+            {t("projects.createHelpText")}
+          </EmptyStateDescription>
+        </EmptyStateContainer>
+      </Section>
+    </SectionGroup>
   );
 };
 

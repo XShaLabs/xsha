@@ -130,17 +130,17 @@ func determineOperationInfo(method, path, id string) (operation, resource, resou
 
 func getResourceDisplayName(resource string) string {
 	displayNames := map[string]string{
-		"admin":            "admin",
-		"auth":             "auth",
-		"git-credentials":  "git-credentials",
-		"projects":         "projects",
-		"tasks":            "tasks",
-		"conversations":    "conversations",
-		"dev-environments": "dev-environments",
-		"operation-logs":   "operation-logs",
-		"login-logs":       "login-logs",
-		"logs":             "logs",
-		"user":             "user",
+		"admin":          "admin",
+		"auth":           "auth",
+		"credentials":    "credentials",
+		"projects":       "projects",
+		"tasks":          "tasks",
+		"conversations":  "conversations",
+		"environments":   "environments",
+		"operation-logs": "operation-logs",
+		"login-logs":     "login-logs",
+		"logs":           "logs",
+		"user":           "user",
 	}
 
 	if displayName, exists := displayNames[resource]; exists {
@@ -162,8 +162,8 @@ func normalizeResourceName(path, resource string) string {
 	if strings.Contains(path, "/auth") {
 		return "auth"
 	}
-	if strings.Contains(path, "/git-credentials") {
-		return "git-credentials"
+	if strings.Contains(path, "/credentials") {
+		return "credentials"
 	}
 	if strings.Contains(path, "/projects") {
 		return "projects"
@@ -174,8 +174,8 @@ func normalizeResourceName(path, resource string) string {
 	if strings.Contains(path, "/conversations") {
 		return "conversations"
 	}
-	if strings.Contains(path, "/dev-environments") {
-		return "dev-environments"
+	if strings.Contains(path, "/environments") {
+		return "environments"
 	}
 	if strings.Contains(path, "/logs") {
 		return "logs"

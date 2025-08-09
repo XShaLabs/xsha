@@ -1,131 +1,280 @@
-import React, { useRef, useState } from "react";
+import React, {
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+  useRef,
+} from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { usePageActions } from "@/contexts/PageActionsContext";
+import { useBreadcrumb } from "@/contexts/BreadcrumbContext";
+
+import { DataTable } from "@/components/ui/data-table/data-table";
 import { Plus } from "lucide-react";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { apiService } from "@/lib/api/index";
 import { logError } from "@/lib/errors";
-import { ProjectList } from "@/components/ProjectList";
-import type { Project } from "@/types/project";
-import type { ProjectListRef } from "@/components/ProjectList";
+import {
+  Section,
+  SectionDescription,
+  SectionGroup,
+  SectionHeader,
+  SectionTitle,
+} from "@/components/content/section";
+
+import { createProjectColumns } from "@/components/data-table/projects/columns";
+import { ProjectDataTableToolbar } from "@/components/data-table/projects/data-table-toolbar";
+import { DataTablePaginationServer } from "@/components/ui/data-table/data-table-pagination-server";
+import type {
+  Project,
+  ProjectListParams,
+  GitProtocolType,
+} from "@/types/project";
+import type { ColumnFiltersState, SortingState } from "@tanstack/react-table";
 
 const ProjectListPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const projectListRef = useRef<ProjectListRef>(null);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [projectToDelete, setProjectToDelete] = useState<number | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const { setActions } = usePageActions();
+  const { setItems } = useBreadcrumb();
+
+  // Add request deduplication
+  const lastRequestRef = useRef<string>("");
+  const isRequestInProgress = useRef(false);
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+  const pageSize = 10;
 
   usePageTitle(t("common.pageTitle.projects"));
 
-  const handleEdit = (project: Project) => {
-    navigate(`/projects/${project.id}/edit`);
-  };
+  const loadProjectsData = useCallback(
+    async (page: number, filters: ColumnFiltersState, updateUrl = true) => {
+      // Create a unique request key for deduplication
+      const requestKey = JSON.stringify({ page, filters, updateUrl });
 
-  const handleDelete = (id: number) => {
-    setProjectToDelete(id);
-    setDeleteDialogOpen(true);
-  };
-
-  const handleConfirmDelete = async () => {
-    if (!projectToDelete) return;
-
-    try {
-      await apiService.projects.delete(projectToDelete);
-      toast.success(t("projects.messages.deleteSuccess"));
-      if (projectListRef.current) {
-        projectListRef.current.refreshData();
+      // Skip if same request is already in progress or just completed
+      if (
+        isRequestInProgress.current ||
+        lastRequestRef.current === requestKey
+      ) {
+        return;
       }
-    } catch (error) {
-      logError(error as Error, "Failed to delete project");
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : t("projects.messages.deleteFailed")
-      );
-    } finally {
-      setDeleteDialogOpen(false);
-      setProjectToDelete(null);
+
+      isRequestInProgress.current = true;
+      lastRequestRef.current = requestKey;
+
+      try {
+        setLoading(true);
+
+        // Convert DataTable filters to API parameters
+        const apiParams: ProjectListParams = {
+          page,
+          page_size: pageSize,
+        };
+
+        // Handle column filters
+        filters.forEach((filter) => {
+          if (filter.id === "name" && filter.value) {
+            apiParams.name = filter.value as string;
+          } else if (filter.id === "protocol" && filter.value) {
+            apiParams.protocol = filter.value as GitProtocolType;
+          }
+        });
+        const response = await apiService.projects.list(apiParams);
+        setProjects(response.projects);
+        setTotal(response.total);
+        setTotalPages(response.total_pages);
+        setCurrentPage(page);
+
+        // Update URL parameters
+        if (updateUrl) {
+          const params = new URLSearchParams();
+
+          // Add filter parameters
+          filters.forEach((filter) => {
+            if (filter.value) {
+              params.set(filter.id, String(filter.value));
+            }
+          });
+
+          // Add page parameter (only if not page 1)
+          if (page > 1) {
+            params.set("page", String(page));
+          }
+
+          // Update URL without causing navigation
+          setSearchParams(params, { replace: true });
+        }
+      } catch (error) {
+        logError(error as Error, "Failed to load projects");
+      } finally {
+        setLoading(false);
+        isRequestInProgress.current = false;
+
+        // Clear the request key after a short delay to allow legitimate new requests
+        setTimeout(() => {
+          if (lastRequestRef.current === requestKey) {
+            lastRequestRef.current = "";
+          }
+        }, 500); // Increase delay to prevent rapid duplicate requests
+      }
+    },
+    [pageSize, setSearchParams]
+  );
+
+  // Initialize from URL on component mount (only once)
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  useEffect(() => {
+    // Get URL params directly to avoid dependency issues
+    const nameParam = searchParams.get("name");
+    const protocolParam = searchParams.get("protocol");
+    const pageParam = searchParams.get("page");
+
+    const initialFilters: ColumnFiltersState = [];
+
+    if (nameParam) {
+      initialFilters.push({ id: "name", value: nameParam });
     }
-  };
 
-  const handleCancelDelete = () => {
-    setDeleteDialogOpen(false);
-    setProjectToDelete(null);
-  };
+    if (protocolParam) {
+      initialFilters.push({
+        id: "protocol",
+        value: protocolParam as GitProtocolType,
+      });
+    }
 
-  const handleCreateNew = () => {
-    navigate("/projects/create");
-  };
+    const initialPage = pageParam ? parseInt(pageParam, 10) : 1;
+
+    // Set state first
+    setColumnFilters(initialFilters);
+    setCurrentPage(initialPage);
+
+    // Load initial data using the unified function
+    loadProjectsData(initialPage, initialFilters, false).then(() => {
+      setIsInitialized(true);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty dependency array - only run once on mount
+
+  // Handle column filter changes (skip initial load)
+  useEffect(() => {
+    if (isInitialized) {
+      loadProjectsData(1, columnFilters); // Reset to page 1 when filtering
+    }
+  }, [columnFilters, isInitialized, loadProjectsData]);
+
+  const handlePageChange = useCallback(
+    (page: number) => {
+      loadProjectsData(page, columnFilters);
+    },
+    [columnFilters, loadProjectsData]
+  );
+
+  // Set page actions (Create button in header) and clear breadcrumb
+  useEffect(() => {
+    const handleCreateNew = () => {
+      navigate("/projects/create");
+    };
+
+    setActions(
+      <Button onClick={handleCreateNew} size="sm">
+        <Plus className="h-4 w-4 mr-2" />
+        {t("projects.create")}
+      </Button>
+    );
+
+    // Clear breadcrumb items (we're at the root level)
+    setItems([]);
+
+    // Cleanup when component unmounts
+    return () => {
+      setActions(null);
+      setItems([]);
+    };
+  }, [navigate, setActions, setItems, t]);
+
+  const handleEdit = useCallback(
+    (project: Project) => {
+      navigate(`/projects/${project.id}/edit`);
+    },
+    [navigate]
+  );
+
+  const handleDelete = useCallback(
+    async (id: number) => {
+      try {
+        await apiService.projects.delete(id);
+        await loadProjectsData(currentPage, columnFilters);
+      } catch (error) {
+        // Re-throw error to let QuickActions handle the user notification
+        throw error;
+      }
+    },
+    [loadProjectsData, currentPage, columnFilters]
+  );
+
+  const handleManageTasks = useCallback(
+    (project: Project) => {
+      navigate(`/projects/${project.id}/tasks`);
+    },
+    [navigate]
+  );
+
+  const columns = useMemo(
+    () =>
+      createProjectColumns({
+        t,
+        onEdit: handleEdit,
+        onDelete: handleDelete,
+        onManageTasks: handleManageTasks,
+      }),
+    [t, handleEdit, handleDelete, handleManageTasks]
+  );
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center py-6">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">
-              {t("navigation.projects")}
-            </h1>
-            <p className="mt-2 text-sm text-muted-foreground">
+      <SectionGroup>
+        <Section>
+          <SectionHeader>
+            <SectionTitle>{t("navigation.projects")}</SectionTitle>
+            <SectionDescription>
               {t("projects.page_description")}
-            </p>
+            </SectionDescription>
+          </SectionHeader>
+        </Section>
+        <Section>
+          <div className="space-y-4">
+            <DataTable
+              columns={columns}
+              data={projects}
+              toolbarComponent={ProjectDataTableToolbar}
+              columnFilters={columnFilters}
+              setColumnFilters={setColumnFilters}
+              sorting={sorting}
+              setSorting={setSorting}
+              loading={loading}
+            />
+            <DataTablePaginationServer
+              currentPage={currentPage}
+              totalPages={totalPages}
+              total={total}
+              onPageChange={handlePageChange}
+            />
           </div>
-          <div className="flex gap-2">
-            <Button onClick={handleCreateNew}>
-              <Plus className="h-4 w-4 mr-2" />
-              {t("projects.create")}
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <ProjectList
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          onCreateNew={handleCreateNew}
-          ref={projectListRef}
-        />
-      </div>
-
-      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="text-foreground">
-              {t("projects.delete")}
-            </DialogTitle>
-            <DialogDescription className="text-muted-foreground">
-              {t("projects.messages.deleteConfirm")}
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              className="text-foreground hover:text-foreground"
-              onClick={handleCancelDelete}
-            >
-              {t("common.cancel")}
-            </Button>
-            <Button
-              variant="destructive"
-              className="text-foreground"
-              onClick={handleConfirmDelete}
-            >
-              {t("projects.delete")}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        </Section>
+      </SectionGroup>
     </div>
   );
 };

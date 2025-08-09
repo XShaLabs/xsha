@@ -36,11 +36,15 @@ func (r *gitCredentialRepository) GetByName(name string) (*database.GitCredentia
 	return &credential, nil
 }
 
-func (r *gitCredentialRepository) List(credType *database.GitCredentialType, page, pageSize int) ([]database.GitCredential, int64, error) {
+func (r *gitCredentialRepository) List(name *string, credType *database.GitCredentialType, page, pageSize int) ([]database.GitCredential, int64, error) {
 	var credentials []database.GitCredential
 	var total int64
 
 	query := r.db.Model(&database.GitCredential{})
+
+	if name != nil && *name != "" {
+		query = query.Where("name LIKE ?", "%"+*name+"%")
+	}
 
 	if credType != nil {
 		query = query.Where("type = ?", *credType)

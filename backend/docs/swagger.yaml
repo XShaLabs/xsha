@@ -24,6 +24,8 @@ definitions:
         type: string
       description:
         type: string
+      docker_image:
+        type: string
       env_vars:
         type: string
       id:
@@ -31,6 +33,8 @@ definitions:
       memory_limit:
         type: integer
       name:
+        type: string
+      session_dir:
         type: string
       type:
         type: string
@@ -90,10 +94,6 @@ definitions:
         type: string
       id:
         type: integer
-      is_active:
-        type: boolean
-      last_used:
-        type: string
       name:
         type: string
       protocol:
@@ -127,6 +127,8 @@ definitions:
         $ref: '#/definitions/database.Project'
       project_id:
         type: integer
+      session_id:
+        type: string
       start_branch:
         type: string
       status:
@@ -255,16 +257,10 @@ definitions:
     type: object
   handlers.ConfigUpdateItem:
     properties:
-      category:
-        type: string
       config_key:
         type: string
       config_value:
         type: string
-      description:
-        type: string
-      is_editable:
-        type: boolean
     required:
     - config_key
     - config_value
@@ -321,6 +317,8 @@ definitions:
         type: number
       description:
         type: string
+      docker_image:
+        type: string
       env_vars:
         additionalProperties:
           type: string
@@ -334,6 +332,7 @@ definitions:
       type:
         type: string
     required:
+    - docker_image
     - name
     - type
     type: object
@@ -573,12 +572,28 @@ paths:
     get:
       consumes:
       - application/json
-      description: Get system login log records, supporting filtering by username
-        and pagination
+      description: Get system login log records, supporting filtering by username,
+        IP, success status, date range and pagination
       parameters:
       - description: Username filter
         in: query
         name: username
+        type: string
+      - description: IP address filter
+        in: query
+        name: ip
+        type: string
+      - description: Success status filter
+        in: query
+        name: success
+        type: boolean
+      - description: Start time filter (YYYY-MM-DD)
+        in: query
+        name: start_time
+        type: string
+      - description: End time filter (YYYY-MM-DD)
+        in: query
+        name: end_time
         type: string
       - description: Page number, defaults to 1
         in: query
@@ -594,29 +609,33 @@ paths:
         "200":
           description: Login log list
           schema:
-            properties:
-              logs:
-                items:
-                  type: object
-                type: array
-              message:
-                type: string
-              page:
-                type: number
-              page_size:
-                type: number
-              total:
-                type: number
-              total_pages:
-                type: number
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                logs:
+                  items:
+                    type: object
+                  type: array
+                message:
+                  type: string
+                page:
+                  type: number
+                page_size:
+                  type: number
+                total:
+                  type: number
+                total_pages:
+                  type: number
+              type: object
         "500":
           description: Failed to get login logs
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
       security:
       - BearerAuth: []
       summary: Get login logs
@@ -667,29 +686,33 @@ paths:
         "200":
           description: Operation log list
           schema:
-            properties:
-              logs:
-                items:
-                  type: object
-                type: array
-              message:
-                type: string
-              page:
-                type: number
-              page_size:
-                type: number
-              total:
-                type: number
-              total_pages:
-                type: number
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                logs:
+                  items:
+                    type: object
+                  type: array
+                message:
+                  type: string
+                page:
+                  type: number
+                page_size:
+                  type: number
+                total:
+                  type: number
+                total_pages:
+                  type: number
+              type: object
         "500":
           description: Failed to get operation logs
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
       security:
       - BearerAuth: []
       summary: Get operation log list
@@ -712,26 +735,32 @@ paths:
         "200":
           description: Operation log details
           schema:
-            properties:
-              log:
-                type: object
-              message:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                log:
+                  type: object
+                message:
+                  type: string
+              type: object
         "400":
           description: Invalid log ID
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
         "404":
           description: Log not found
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
       security:
       - BearerAuth: []
       summary: Get operation log details
@@ -761,25 +790,29 @@ paths:
         "200":
           description: Operation statistics information
           schema:
-            properties:
-              end_time:
-                type: string
-              message:
-                type: string
-              operation_stats:
-                type: object
-              resource_stats:
-                type: object
-              start_time:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                end_time:
+                  type: string
+                message:
+                  type: string
+                operation_stats:
+                  type: object
+                resource_stats:
+                  type: object
+                start_time:
+                  type: string
+              type: object
         "500":
           description: Failed to get operation statistics
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
       security:
       - BearerAuth: []
       summary: Get operation statistics
@@ -796,45 +829,55 @@ paths:
         name: loginData
         required: true
         schema:
-          properties:
-            password:
-              type: string
-            username:
-              type: string
-          type: object
+          allOf:
+          - type: object
+          - properties:
+              password:
+                type: string
+              username:
+                type: string
+            type: object
       produces:
       - application/json
       responses:
         "200":
           description: Login successful
           schema:
-            properties:
-              expires_at:
-                type: string
-              token:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                expires_at:
+                  type: string
+                token:
+                  type: string
+              type: object
         "400":
           description: Request parameter error
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
         "401":
           description: Authentication failed
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
         "429":
           description: Too frequent requests
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
       summary: User login
       tags:
       - Authentication
@@ -849,31 +892,39 @@ paths:
         "200":
           description: Logout successful
           schema:
-            properties:
-              message:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                message:
+                  type: string
+              type: object
         "400":
           description: Invalid token
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
         "401":
           description: Authentication failed
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
         "500":
           description: Logout failed
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
       security:
       - BearerAuth: []
       summary: User logout
@@ -906,37 +957,45 @@ paths:
         "200":
           description: Results retrieved successfully
           schema:
-            properties:
-              data:
-                properties:
-                  page:
-                    type: integer
-                  page_size:
-                    type: integer
-                  results:
-                    items:
-                      type: object
-                    type: array
-                  total:
-                    type: integer
-                type: object
-              message:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                data:
+                  allOf:
+                  - type: object
+                  - properties:
+                      page:
+                        type: integer
+                      page_size:
+                        type: integer
+                      results:
+                        items:
+                          type: object
+                        type: array
+                      total:
+                        type: integer
+                    type: object
+                message:
+                  type: string
+              type: object
         "400":
           description: Request parameter error
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
         "500":
           description: Internal server error
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
       security:
       - BearerAuth: []
       summary: List results by task ID
@@ -959,17 +1018,21 @@ paths:
         "200":
           description: Result deleted successfully
           schema:
-            properties:
-              message:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                message:
+                  type: string
+              type: object
         "400":
           description: Request parameter error
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
       security:
       - BearerAuth: []
       summary: Delete conversation result
@@ -991,26 +1054,32 @@ paths:
         "200":
           description: Result retrieved successfully
           schema:
-            properties:
-              data:
-                type: object
-              message:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                data:
+                  type: object
+                message:
+                  type: string
+              type: object
         "400":
           description: Invalid result ID
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
         "404":
           description: Result not found
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
       security:
       - BearerAuth: []
       summary: Get conversation result
@@ -1038,17 +1107,21 @@ paths:
         "200":
           description: Result updated successfully
           schema:
-            properties:
-              message:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                message:
+                  type: string
+              type: object
         "400":
           description: Request parameter error
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
       security:
       - BearerAuth: []
       summary: Update conversation result
@@ -1081,44 +1154,54 @@ paths:
         "200":
           description: Conversations retrieved successfully
           schema:
-            properties:
-              data:
-                properties:
-                  conversations:
-                    items:
-                      type: object
-                    type: array
-                  page:
-                    type: integer
-                  page_size:
-                    type: integer
-                  total:
-                    type: integer
-                type: object
-              message:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                data:
+                  allOf:
+                  - type: object
+                  - properties:
+                      conversations:
+                        items:
+                          type: object
+                        type: array
+                      page:
+                        type: integer
+                      page_size:
+                        type: integer
+                      total:
+                        type: integer
+                    type: object
+                message:
+                  type: string
+              type: object
         "400":
           description: Request parameter error
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
         "401":
           description: Authentication failed
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
         "500":
           description: Internal server error
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
       security:
       - BearerAuth: []
       summary: List task conversations
@@ -1141,26 +1224,32 @@ paths:
         "201":
           description: Conversation created successfully
           schema:
-            properties:
-              data:
-                type: object
-              message:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                data:
+                  type: object
+                message:
+                  type: string
+              type: object
         "400":
           description: Request parameter error
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
         "401":
           description: Authentication failed
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
       security:
       - BearerAuth: []
       summary: Create task conversation
@@ -1183,26 +1272,32 @@ paths:
         "200":
           description: Result retrieved successfully
           schema:
-            properties:
-              data:
-                type: object
-              message:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                data:
+                  type: object
+                message:
+                  type: string
+              type: object
         "400":
           description: Invalid conversation ID
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
         "404":
           description: Result not found
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
       security:
       - BearerAuth: []
       summary: Get result by conversation ID
@@ -1225,31 +1320,39 @@ paths:
         "200":
           description: Conversation deleted successfully
           schema:
-            properties:
-              message:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                message:
+                  type: string
+              type: object
         "400":
           description: Invalid conversation ID
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
         "401":
           description: Authentication failed
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
         "404":
           description: Conversation not found
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
       security:
       - BearerAuth: []
       summary: Delete task conversation
@@ -1271,33 +1374,41 @@ paths:
         "200":
           description: Conversation retrieved successfully
           schema:
-            properties:
-              data:
-                type: object
-              message:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                data:
+                  type: object
+                message:
+                  type: string
+              type: object
         "400":
           description: Invalid conversation ID
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
         "401":
           description: Authentication failed
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
         "404":
           description: Conversation not found
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
       security:
       - BearerAuth: []
       summary: Get task conversation
@@ -1325,24 +1436,30 @@ paths:
         "200":
           description: Conversation updated successfully
           schema:
-            properties:
-              message:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                message:
+                  type: string
+              type: object
         "400":
           description: Request parameter error
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
         "401":
           description: Authentication failed
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
       security:
       - BearerAuth: []
       summary: Update task conversation
@@ -1370,31 +1487,39 @@ paths:
         "200":
           description: Git diff retrieved successfully
           schema:
-            properties:
-              data:
-                type: object
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                data:
+                  type: object
+              type: object
         "400":
           description: Invalid conversation ID
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
         "401":
           description: Authentication failed
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
         "500":
           description: Failed to get Git diff
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
       security:
       - BearerAuth: []
       summary: Get conversation Git diff
@@ -1422,36 +1547,46 @@ paths:
         "200":
           description: File Git diff retrieved successfully
           schema:
-            properties:
-              data:
-                properties:
-                  diff_content:
-                    type: string
-                  file_path:
-                    type: string
-                type: object
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                data:
+                  allOf:
+                  - type: object
+                  - properties:
+                      diff_content:
+                        type: string
+                      file_path:
+                        type: string
+                    type: object
+              type: object
         "400":
           description: Request parameter error
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
         "401":
           description: Authentication failed
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
         "500":
           description: Failed to get file Git diff
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
       security:
       - BearerAuth: []
       summary: Get conversation file Git diff
@@ -1474,39 +1609,367 @@ paths:
         "200":
           description: Latest conversation retrieved successfully
           schema:
-            properties:
-              data:
-                type: object
-              message:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                data:
+                  type: object
+                message:
+                  type: string
+              type: object
         "400":
           description: Request parameter error
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
         "401":
           description: Authentication failed
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
         "404":
           description: Conversation not found
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
       security:
       - BearerAuth: []
       summary: Get latest task conversation
       tags:
       - Task Conversations
-  /dev-environments:
+  /credentials:
+    get:
+      consumes:
+      - application/json
+      description: Get the current user's Git credential list, supporting filtering
+        by name, type and pagination
+      parameters:
+      - description: Credential name filter
+        in: query
+        name: name
+        type: string
+      - description: Credential type filter (password/token/ssh_key)
+        in: query
+        name: type
+        type: string
+      - description: Page number, defaults to 1
+        in: query
+        name: page
+        type: integer
+      - description: Page size, defaults to 20, maximum 100
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Credential list
+          schema:
+            allOf:
+            - type: object
+            - properties:
+                credentials:
+                  items:
+                    type: object
+                  type: array
+                message:
+                  type: string
+                page:
+                  type: number
+                page_size:
+                  type: number
+                total:
+                  type: number
+                total_pages:
+                  type: number
+              type: object
+        "500":
+          description: Failed to get credential list
+          schema:
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get Git credential list
+      tags:
+      - Git Credentials
+    post:
+      consumes:
+      - application/json
+      description: Create a new Git credential, supporting password, token, and SSH
+        key types
+      parameters:
+      - description: Credential information
+        in: body
+        name: credential
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.CreateCredentialRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Credential created successfully
+          schema:
+            allOf:
+            - type: object
+            - properties:
+                credential:
+                  type: object
+                message:
+                  type: string
+              type: object
+        "400":
+          description: Request parameter error
+          schema:
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
+        "500":
+          description: Failed to create credential
+          schema:
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Create Git credential
+      tags:
+      - Git Credentials
+  /credentials/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a specified Git credential
+      parameters:
+      - description: Credential ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Credential deleted successfully
+          schema:
+            allOf:
+            - type: object
+            - properties:
+                message:
+                  type: string
+              type: object
+        "400":
+          description: Invalid credential ID
+          schema:
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
+        "404":
+          description: Credential not found
+          schema:
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Delete Git credential
+      tags:
+      - Git Credentials
+    get:
+      consumes:
+      - application/json
+      description: Get detailed information of a specified Git credential by ID
+      parameters:
+      - description: Credential ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Credential details
+          schema:
+            allOf:
+            - type: object
+            - properties:
+                credential:
+                  type: object
+              type: object
+        "400":
+          description: Invalid credential ID
+          schema:
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
+        "404":
+          description: Credential not found
+          schema:
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get Git credential details
+      tags:
+      - Git Credentials
+    put:
+      consumes:
+      - application/json
+      description: Update information of a specified Git credential
+      parameters:
+      - description: Credential ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Credential update information
+        in: body
+        name: credential
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.UpdateCredentialRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Credential updated successfully
+          schema:
+            allOf:
+            - type: object
+            - properties:
+                message:
+                  type: string
+              type: object
+        "400":
+          description: Request parameter error
+          schema:
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
+        "404":
+          description: Credential not found
+          schema:
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Update Git credential
+      tags:
+      - Git Credentials
+  /dashboard/recent-tasks:
+    get:
+      consumes:
+      - application/json
+      description: Get recent tasks for dashboard
+      parameters:
+      - default: 10
+        description: Number of tasks to return
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Recent tasks
+          schema:
+            allOf:
+            - type: object
+            - properties:
+                tasks:
+                  items:
+                    type: object
+                  type: array
+              type: object
+        "400":
+          description: Invalid request parameters
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get recent tasks
+      tags:
+      - Dashboard
+  /dashboard/stats:
+    get:
+      consumes:
+      - application/json
+      description: Get aggregated system statistics for dashboard
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Dashboard statistics
+          schema:
+            allOf:
+            - type: object
+            - properties:
+                stats:
+                  additionalProperties: true
+                  type: object
+              type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get dashboard statistics
+      tags:
+      - Dashboard
+  /environments:
     get:
       consumes:
       - application/json
@@ -1521,13 +1984,13 @@ paths:
         in: query
         name: page_size
         type: integer
-      - description: Environment type filter
-        in: query
-        name: type
-        type: string
       - description: Environment name filter
         in: query
         name: name
+        type: string
+      - description: Docker image filter
+        in: query
+        name: docker_image
         type: string
       produces:
       - application/json
@@ -1535,14 +1998,16 @@ paths:
         "200":
           description: Environment list
           schema:
-            properties:
-              environments:
-                items:
-                  type: object
-                type: array
-              total:
-                type: number
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                environments:
+                  items:
+                    type: object
+                  type: array
+                total:
+                  type: number
+              type: object
       security:
       - BearerAuth: []
       summary: Get environment list
@@ -1565,25 +2030,29 @@ paths:
         "201":
           description: Environment created successfully
           schema:
-            properties:
-              environment:
-                type: object
-              message:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                environment:
+                  type: object
+                message:
+                  type: string
+              type: object
         "400":
           description: Request parameter error
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
       security:
       - BearerAuth: []
       summary: Create development environment
       tags:
       - Development Environment
-  /dev-environments/{id}:
+  /environments/{id}:
     delete:
       consumes:
       - application/json
@@ -1600,17 +2069,21 @@ paths:
         "200":
           description: Environment deleted successfully
           schema:
-            properties:
-              message:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                message:
+                  type: string
+              type: object
         "400":
           description: Delete failed
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
       security:
       - BearerAuth: []
       summary: Delete environment
@@ -1632,17 +2105,21 @@ paths:
         "200":
           description: Environment details
           schema:
-            properties:
-              environment:
-                type: object
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                environment:
+                  type: object
+              type: object
         "404":
           description: Environment not found
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
       security:
       - BearerAuth: []
       summary: Get environment details
@@ -1670,23 +2147,27 @@ paths:
         "200":
           description: Environment updated successfully
           schema:
-            properties:
-              message:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                message:
+                  type: string
+              type: object
         "400":
           description: Request parameter error
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
       security:
       - BearerAuth: []
       summary: Update environment
       tags:
       - Development Environment
-  /dev-environments/{id}/env-vars:
+  /environments/{id}/env-vars:
     get:
       consumes:
       - application/json
@@ -1703,17 +2184,21 @@ paths:
         "200":
           description: Environment variables
           schema:
-            properties:
-              env_vars:
-                type: object
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                env_vars:
+                  type: object
+              type: object
         "400":
           description: Get failed
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
       security:
       - BearerAuth: []
       summary: Get environment variables
@@ -1743,264 +2228,78 @@ paths:
         "200":
           description: Update successful
           schema:
-            properties:
-              message:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                message:
+                  type: string
+              type: object
         "400":
           description: Update failed
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
       security:
       - BearerAuth: []
       summary: Update environment variables
       tags:
       - Development Environment
-  /dev-environments/available-types:
+  /environments/available-images:
     get:
       consumes:
       - application/json
-      description: Get available environment types from system configuration
+      description: Get available environment images from system configuration
       produces:
       - application/json
       responses:
         "200":
-          description: Available environment types
+          description: Available environment images
           schema:
-            properties:
-              types:
-                items:
-                  type: object
-                type: array
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                images:
+                  items:
+                    type: object
+                  type: array
+              type: object
       security:
       - BearerAuth: []
-      summary: Get available environment types
+      summary: Get available environment images
       tags:
       - Development Environment
-  /git-credentials:
+  /environments/stats:
     get:
       consumes:
       - application/json
-      description: Get the current user's Git credential list, supporting filtering
-        by type and pagination
-      parameters:
-      - description: Credential type filter (password/token/ssh_key)
-        in: query
-        name: type
-        type: string
-      - description: Page number, defaults to 1
-        in: query
-        name: page
-        type: integer
-      - description: Page size, defaults to 20, maximum 100
-        in: query
-        name: page_size
-        type: integer
+      description: Get statistics about development environments
       produces:
       - application/json
       responses:
         "200":
-          description: Credential list
+          description: Environment statistics
           schema:
-            properties:
-              credentials:
-                items:
+            allOf:
+            - type: object
+            - properties:
+                stats:
+                  additionalProperties: true
                   type: object
-                type: array
-              message:
-                type: string
-              page:
-                type: number
-              page_size:
-                type: number
-              total:
-                type: number
-              total_pages:
-                type: number
-            type: object
+              type: object
         "500":
-          description: Failed to get credential list
+          description: Internal server error
           schema:
-            properties:
-              error:
-                type: string
+            additionalProperties: true
             type: object
       security:
       - BearerAuth: []
-      summary: Get Git credential list
+      summary: Get development environment statistics
       tags:
-      - Git Credentials
-    post:
-      consumes:
-      - application/json
-      description: Create a new Git credential, supporting password, token, and SSH
-        key types
-      parameters:
-      - description: Credential information
-        in: body
-        name: credential
-        required: true
-        schema:
-          $ref: '#/definitions/handlers.CreateCredentialRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Credential created successfully
-          schema:
-            properties:
-              credential:
-                type: object
-              message:
-                type: string
-            type: object
-        "400":
-          description: Request parameter error
-          schema:
-            properties:
-              error:
-                type: string
-            type: object
-        "500":
-          description: Failed to create credential
-          schema:
-            properties:
-              error:
-                type: string
-            type: object
-      security:
-      - BearerAuth: []
-      summary: Create Git credential
-      tags:
-      - Git Credentials
-  /git-credentials/{id}:
-    delete:
-      consumes:
-      - application/json
-      description: Delete a specified Git credential
-      parameters:
-      - description: Credential ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Credential deleted successfully
-          schema:
-            properties:
-              message:
-                type: string
-            type: object
-        "400":
-          description: Invalid credential ID
-          schema:
-            properties:
-              error:
-                type: string
-            type: object
-        "404":
-          description: Credential not found
-          schema:
-            properties:
-              error:
-                type: string
-            type: object
-      security:
-      - BearerAuth: []
-      summary: Delete Git credential
-      tags:
-      - Git Credentials
-    get:
-      consumes:
-      - application/json
-      description: Get detailed information of a specified Git credential by ID
-      parameters:
-      - description: Credential ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Credential details
-          schema:
-            properties:
-              credential:
-                type: object
-            type: object
-        "400":
-          description: Invalid credential ID
-          schema:
-            properties:
-              error:
-                type: string
-            type: object
-        "404":
-          description: Credential not found
-          schema:
-            properties:
-              error:
-                type: string
-            type: object
-      security:
-      - BearerAuth: []
-      summary: Get Git credential details
-      tags:
-      - Git Credentials
-    put:
-      consumes:
-      - application/json
-      description: Update information of a specified Git credential
-      parameters:
-      - description: Credential ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      - description: Credential update information
-        in: body
-        name: credential
-        required: true
-        schema:
-          $ref: '#/definitions/handlers.UpdateCredentialRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Credential updated successfully
-          schema:
-            properties:
-              message:
-                type: string
-            type: object
-        "400":
-          description: Request parameter error
-          schema:
-            properties:
-              error:
-                type: string
-            type: object
-        "404":
-          description: Credential not found
-          schema:
-            properties:
-              error:
-                type: string
-            type: object
-      security:
-      - BearerAuth: []
-      summary: Update Git credential
-      tags:
-      - Git Credentials
+      - Development Environment
   /health:
     get:
       consumes:
@@ -2012,14 +2311,16 @@ paths:
         "200":
           description: Server status is normal
           schema:
-            properties:
-              lang:
-                type: string
-              message:
-                type: string
-              status:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                lang:
+                  type: string
+                message:
+                  type: string
+                status:
+                  type: string
+              type: object
       summary: Health check
       tags:
       - System
@@ -2051,25 +2352,29 @@ paths:
         "200":
           description: Project list
           schema:
-            properties:
-              page:
-                type: number
-              page_size:
-                type: number
-              projects:
-                items:
-                  type: object
-                type: array
-              total:
-                type: number
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                page:
+                  type: number
+                page_size:
+                  type: number
+                projects:
+                  items:
+                    type: object
+                  type: array
+                total:
+                  type: number
+              type: object
         "500":
           description: Failed to get project list
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
       security:
       - BearerAuth: []
       summary: Get project list
@@ -2092,26 +2397,32 @@ paths:
         "201":
           description: Project created successfully
           schema:
-            properties:
-              id:
-                type: number
-              message:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                id:
+                  type: number
+                message:
+                  type: string
+              type: object
         "400":
           description: Request parameter error
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
         "500":
           description: Project creation failed
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
       security:
       - BearerAuth: []
       summary: Create project
@@ -2134,24 +2445,30 @@ paths:
         "200":
           description: Project deleted successfully
           schema:
-            properties:
-              message:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                message:
+                  type: string
+              type: object
         "400":
           description: Invalid project ID
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
         "404":
           description: Project not found
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
       security:
       - BearerAuth: []
       summary: Delete project
@@ -2173,24 +2490,30 @@ paths:
         "200":
           description: Project details
           schema:
-            properties:
-              project:
-                type: object
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                project:
+                  type: object
+              type: object
         "400":
           description: Invalid project ID
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
         "404":
           description: Project not found
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
       security:
       - BearerAuth: []
       summary: Get project details
@@ -2218,24 +2541,30 @@ paths:
         "200":
           description: Project updated successfully
           schema:
-            properties:
-              message:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                message:
+                  type: string
+              type: object
         "400":
           description: Request parameter error
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
         "404":
           description: Project not found
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
       security:
       - BearerAuth: []
       summary: Update project
@@ -2268,30 +2597,36 @@ paths:
         "200":
           description: Results retrieved successfully
           schema:
-            properties:
-              data:
-                properties:
-                  items:
-                    items:
-                      type: object
-                    type: array
-                  page:
-                    type: integer
-                  page_size:
-                    type: integer
-                  total:
-                    type: integer
-                type: object
-              message:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                data:
+                  allOf:
+                  - type: object
+                  - properties:
+                      items:
+                        items:
+                          type: object
+                        type: array
+                      page:
+                        type: integer
+                      page_size:
+                        type: integer
+                      total:
+                        type: integer
+                    type: object
+                message:
+                  type: string
+              type: object
         "400":
           description: Request parameter error
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
       security:
       - BearerAuth: []
       summary: List results by project ID
@@ -2314,19 +2649,23 @@ paths:
         "200":
           description: Project statistics retrieved successfully
           schema:
-            properties:
-              data:
-                type: object
-              message:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                data:
+                  type: object
+                message:
+                  type: string
+              type: object
         "400":
           description: Request parameter error
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
       security:
       - BearerAuth: []
       summary: Get project statistics
@@ -2351,26 +2690,32 @@ paths:
         "200":
           description: Fetch branch list successfully
           schema:
-            properties:
-              message:
-                type: string
-              result:
-                $ref: '#/definitions/handlers.FetchRepositoryBranchesResponse'
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                message:
+                  type: string
+                result:
+                  $ref: '#/definitions/handlers.FetchRepositoryBranchesResponse'
+              type: object
         "400":
           description: Request parameter error
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
         "500":
           description: Failed to fetch branch list
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
       security:
       - BearerAuth: []
       summary: Fetch Git repository branch list
@@ -2393,21 +2738,25 @@ paths:
         "200":
           description: Get credential list successfully
           schema:
-            properties:
-              credentials:
-                items:
-                  type: object
-                type: array
-              message:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                credentials:
+                  items:
+                    type: object
+                  type: array
+                message:
+                  type: string
+              type: object
         "400":
           description: Request parameter error
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
       security:
       - BearerAuth: []
       summary: Get compatible credentials
@@ -2432,19 +2781,23 @@ paths:
         "200":
           description: Parse successfully
           schema:
-            properties:
-              message:
-                type: string
-              result:
-                $ref: '#/definitions/handlers.ParseRepositoryURLResponse'
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                message:
+                  type: string
+                result:
+                  $ref: '#/definitions/handlers.ParseRepositoryURLResponse'
+              type: object
         "400":
           description: Request parameter error
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
       security:
       - BearerAuth: []
       summary: Parse repository URL
@@ -2469,25 +2822,29 @@ paths:
         "200":
           description: Validation successful
           schema:
-            properties:
-              can_access:
-                type: boolean
-              message:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                can_access:
+                  type: boolean
+                message:
+                  type: string
+              type: object
         "400":
           description: Request parameter error or validation failed
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
       security:
       - BearerAuth: []
       summary: Validate Git repository access permissions
       tags:
       - Project
-  /system-configs:
+  /settings:
     get:
       consumes:
       - application/json
@@ -2498,12 +2855,14 @@ paths:
         "200":
           description: All configurations
           schema:
-            properties:
-              configs:
-                items:
-                  type: object
-                type: array
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                configs:
+                  items:
+                    type: object
+                  type: array
+              type: object
       security:
       - BearerAuth: []
       summary: Get all configurations
@@ -2526,17 +2885,21 @@ paths:
         "200":
           description: Configurations updated successfully
           schema:
-            properties:
-              message:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                message:
+                  type: string
+              type: object
         "400":
           description: Request parameter error
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
       security:
       - BearerAuth: []
       summary: Batch update configurations
@@ -2717,37 +3080,45 @@ paths:
         "200":
           description: Tasks retrieved successfully
           schema:
-            properties:
-              data:
-                properties:
-                  page:
-                    type: integer
-                  page_size:
-                    type: integer
-                  tasks:
-                    items:
-                      $ref: '#/definitions/database.Task'
-                    type: array
-                  total:
-                    type: integer
-                type: object
-              message:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                data:
+                  allOf:
+                  - type: object
+                  - properties:
+                      page:
+                        type: integer
+                      page_size:
+                        type: integer
+                      tasks:
+                        items:
+                          $ref: '#/definitions/database.Task'
+                        type: array
+                      total:
+                        type: integer
+                    type: object
+                message:
+                  type: string
+              type: object
         "401":
           description: Authentication failed
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
         "500":
           description: Internal server error
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
       security:
       - BearerAuth: []
       summary: List tasks
@@ -2771,26 +3142,32 @@ paths:
         "201":
           description: Task created successfully
           schema:
-            properties:
-              data:
-                $ref: '#/definitions/handlers.CreateTaskResponse'
-              message:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                data:
+                  $ref: '#/definitions/handlers.CreateTaskResponse'
+                message:
+                  type: string
+              type: object
         "400":
           description: Request parameter error
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
         "401":
           description: Authentication failed
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
       security:
       - BearerAuth: []
       summary: Create task
@@ -2813,31 +3190,39 @@ paths:
         "200":
           description: Task deleted successfully
           schema:
-            properties:
-              message:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                message:
+                  type: string
+              type: object
         "400":
           description: Invalid task ID
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
         "401":
           description: Authentication failed
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
         "404":
           description: Task not found
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
       security:
       - BearerAuth: []
       summary: Delete task
@@ -2859,33 +3244,41 @@ paths:
         "200":
           description: Task retrieved successfully
           schema:
-            properties:
-              data:
-                $ref: '#/definitions/database.Task'
-              message:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                data:
+                  $ref: '#/definitions/database.Task'
+                message:
+                  type: string
+              type: object
         "400":
           description: Invalid task ID
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
         "401":
           description: Authentication failed
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
         "404":
           description: Task not found
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
       security:
       - BearerAuth: []
       summary: Get task
@@ -2913,24 +3306,30 @@ paths:
         "200":
           description: Task updated successfully
           schema:
-            properties:
-              message:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                message:
+                  type: string
+              type: object
         "400":
           description: Request parameter error
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
         "401":
           description: Authentication failed
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
       security:
       - BearerAuth: []
       summary: Update task
@@ -2958,45 +3357,57 @@ paths:
         "200":
           description: Git diff retrieved successfully
           schema:
-            properties:
-              data:
-                type: object
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                data:
+                  type: object
+              type: object
         "400":
           description: Invalid task ID or missing workspace
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
         "401":
           description: Authentication failed
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
         "403":
           description: No permission to access task
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
         "404":
           description: Task not found
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
         "500":
           description: Failed to get git diff
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
       security:
       - BearerAuth: []
       summary: Get task git diff
@@ -3025,50 +3436,64 @@ paths:
         "200":
           description: File diff retrieved successfully
           schema:
-            properties:
-              data:
-                properties:
-                  diff_content:
-                    type: string
-                  file_path:
-                    type: string
-                type: object
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                data:
+                  allOf:
+                  - type: object
+                  - properties:
+                      diff_content:
+                        type: string
+                      file_path:
+                        type: string
+                    type: object
+              type: object
         "400":
           description: Invalid task ID or missing file path
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
         "401":
           description: Authentication failed
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
         "403":
           description: No permission to access task
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
         "404":
           description: Task not found
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
         "500":
           description: Failed to get file diff
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
       security:
       - BearerAuth: []
       summary: Get task git diff file
@@ -3085,44 +3510,64 @@ paths:
         name: id
         required: true
         type: integer
+      - description: Push options
+        in: body
+        name: request
+        schema:
+          allOf:
+          - type: object
+          - properties:
+              force_push:
+                type: boolean
+            type: object
       produces:
       - application/json
       responses:
         "200":
           description: Branch pushed successfully
           schema:
-            properties:
-              data:
-                properties:
-                  output:
-                    type: string
-                type: object
-              message:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                data:
+                  allOf:
+                  - type: object
+                  - properties:
+                      output:
+                        type: string
+                    type: object
+                message:
+                  type: string
+              type: object
         "400":
           description: Invalid task ID
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
         "401":
           description: Authentication failed
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
         "500":
           description: Failed to push branch
           schema:
-            properties:
-              details:
-                type: string
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                details:
+                  type: string
+                error:
+                  type: string
+              type: object
       security:
       - BearerAuth: []
       summary: Push task branch
@@ -3151,24 +3596,30 @@ paths:
         "200":
           description: Task status updated successfully
           schema:
-            properties:
-              message:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                message:
+                  type: string
+              type: object
         "400":
           description: Request parameter error
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
         "401":
           description: Authentication failed
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
       security:
       - BearerAuth: []
       summary: Update task status
@@ -3191,19 +3642,23 @@ paths:
         "200":
           description: Task statistics retrieved successfully
           schema:
-            properties:
-              data:
-                type: object
-              message:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                data:
+                  type: object
+                message:
+                  type: string
+              type: object
         "400":
           description: Request parameter error
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
       security:
       - BearerAuth: []
       summary: Get task statistics
@@ -3227,26 +3682,32 @@ paths:
         "200":
           description: Batch update completed
           schema:
-            properties:
-              data:
-                $ref: '#/definitions/handlers.BatchUpdateTaskStatusResponse'
-              message:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                data:
+                  $ref: '#/definitions/handlers.BatchUpdateTaskStatusResponse'
+                message:
+                  type: string
+              type: object
         "400":
           description: Request parameter error
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
         "401":
           description: Authentication failed
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
       security:
       - BearerAuth: []
       summary: Batch update task status
@@ -3263,17 +3724,21 @@ paths:
         "200":
           description: User information
           schema:
-            properties:
-              username:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                username:
+                  type: string
+              type: object
         "500":
           description: Failed to get user information
           schema:
-            properties:
-              error:
-                type: string
-            type: object
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
       security:
       - BearerAuth: []
       summary: Get current user information

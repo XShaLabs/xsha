@@ -33,14 +33,14 @@
   "system_config.invalid_key_format": "配置键只能包含字母、数字、下划线和连字符",
   "api.not_found": "请求的资源不存在",
   "api.method_not_allowed": "不支持的请求方法",
-  "git_credential.create_success": "Git凭据创建成功",
-  "git_credential.update_success": "Git凭据更新成功",
-  "git_credential.delete_success": "Git凭据删除成功",
+  "git_credential.create_success": "凭据创建成功",
+  "git_credential.update_success": "凭据更新成功",
+  "git_credential.delete_success": "凭据删除成功",
   "git_credential.not_found": "凭据不存在",
   "git_credential.delete_used_by_projects": "无法删除凭据，因为它正在被项目使用",
   "git_credential.invalid_type": "无效的凭据类型",
   "git_credential.name_exists": "凭据名称已存在",
-  "git_credential.use_failed": "使用Git凭据失败",
+  "git_credential.use_failed": "使用凭据失败",
   "git_credential.password_not_set": "密码未设置",
   "git_credential.private_key_not_set": "私钥未设置",
   "git_credential.unsupported_secret_type": "不支持的密钥类型",
@@ -49,22 +49,16 @@
   "git_credential.private_key_required": "SSH密钥类型需要私钥",
   "git_credential.invalid_private_key_format": "无效的私钥格式",
   "git_credential.unsupported_credential_type": "不支持的凭据类型",
-  "git.test_connection_failed": "Git连接测试失败",
-  "git.reset_failed": "Git重置失败",
+  "git.test_connection_failed": "连接测试失败",
+  "git.reset_failed": "重置失败",
   "project.create_success": "项目创建成功",
-
   "project.update_success": "项目更新成功",
-
   "project.delete_success": "项目删除成功",
-
   "project.not_found": "项目不存在",
-
-
-
   "project.access_validation_success": "仓库访问验证成功",
   "project.id_required": "项目ID是必填项",
   "project.delete_has_in_progress_tasks": "无法删除有进行中任务的项目",
-  "project.incompatible_credential": "不兼容的Git凭据",
+  "project.incompatible_credential": "不兼容的凭据",
   "project.invalid_protocol": "无效的协议",
   "project.name_exists": "项目名称已存在",
   "task.create_success": "任务创建成功",
@@ -76,8 +70,8 @@
   "task.project_id_required": "项目ID是必填项",
   "task.project_info_incomplete": "项目信息不完整",
   "task.id_required": "任务ID是必填项",
-  "task.no_git_credential": "没有可用的Git凭据",
-  "task.project_not_associated_with_credential": "项目未关联Git凭据，请先关联Git凭据",
+  "task.no_git_credential": "没有可用的凭据",
+  "task.project_not_associated_with_credential": "项目未关联凭据，请先关联凭据",
   "task.project_not_found": "项目不存在",
   "task.start_branch_required": "起始分支是必填项",
   "task.title_required": "任务标题是必填项",
@@ -139,7 +133,6 @@
   "tasks.push_failed": "推送分支失败",
   "tasks.push_success": "分支推送成功",
   "system_config.update_success": "系统配置更新成功",
-
   "system_config.list_success": "获取配置列表成功",
   "system_config.list_failed": "获取配置列表失败"
 }

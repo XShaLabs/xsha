@@ -5,7 +5,7 @@
   "create": "Create",
   "edit": "Edit",
   "delete": "Delete",
-  "tasksManagement": "Manage Tasks",
+  "tasksManagement": "Tasks",
   "createDescription": "Create a new project configuration",
   "editDescription": "Edit project configuration information",
   "name": "Project Name",
@@ -50,5 +50,13 @@
     "title": "Filter Projects",
     "name_placeholder": "Search by project name"
   },
-  "list": "Project List"
+  "list": "Project List",
+  "createAndCustomize": "Create and start customizing",
+  "createHelpText": "Configure your project repository settings, add credentials, and start automating your development workflow.",
+  "editAndUpdate": "Edit and update settings",
+  "editHelpText": "Modify your project configuration, update repository settings, and manage access credentials.",
+  "metrics": {
+    "total": "Total Projects",
+    "withCredentials": "With Credentials"
+  }
 } 

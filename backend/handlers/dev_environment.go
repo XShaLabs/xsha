@@ -50,7 +50,7 @@ type UpdateEnvironmentRequest struct {
 // @Param environment body CreateEnvironmentRequest true "Environment information"
 // @Success 201 {object} object{message=string,environment=object} "Environment created successfully"
 // @Failure 400 {object} object{error=string} "Request parameter error"
-// @Router /dev-environments [post]
+// @Router /environments [post]
 func (h *DevEnvironmentHandlers) CreateEnvironment(c *gin.Context) {
 	lang := middleware.GetLangFromContext(c)
 
@@ -101,7 +101,7 @@ func (h *DevEnvironmentHandlers) CreateEnvironment(c *gin.Context) {
 // @Param id path int true "Environment ID"
 // @Success 200 {object} object{environment=object} "Environment details"
 // @Failure 404 {object} object{error=string} "Environment not found"
-// @Router /dev-environments/{id} [get]
+// @Router /environments/{id} [get]
 func (h *DevEnvironmentHandlers) GetEnvironment(c *gin.Context) {
 	lang := middleware.GetLangFromContext(c)
 
@@ -139,7 +139,7 @@ func (h *DevEnvironmentHandlers) GetEnvironment(c *gin.Context) {
 // @Param name query string false "Environment name filter"
 // @Param docker_image query string false "Docker image filter"
 // @Success 200 {object} object{environments=[]object,total=number} "Environment list"
-// @Router /dev-environments [get]
+// @Router /environments [get]
 func (h *DevEnvironmentHandlers) ListEnvironments(c *gin.Context) {
 	lang := middleware.GetLangFromContext(c)
 
@@ -196,7 +196,7 @@ func (h *DevEnvironmentHandlers) ListEnvironments(c *gin.Context) {
 // @Param environment body UpdateEnvironmentRequest true "Environment update information"
 // @Success 200 {object} object{message=string} "Environment updated successfully"
 // @Failure 400 {object} object{error=string} "Request parameter error"
-// @Router /dev-environments/{id} [put]
+// @Router /environments/{id} [put]
 func (h *DevEnvironmentHandlers) UpdateEnvironment(c *gin.Context) {
 	lang := middleware.GetLangFromContext(c)
 
@@ -263,7 +263,7 @@ func (h *DevEnvironmentHandlers) UpdateEnvironment(c *gin.Context) {
 // @Param id path int true "Environment ID"
 // @Success 200 {object} object{message=string} "Environment deleted successfully"
 // @Failure 400 {object} object{error=string} "Delete failed"
-// @Router /dev-environments/{id} [delete]
+// @Router /environments/{id} [delete]
 func (h *DevEnvironmentHandlers) DeleteEnvironment(c *gin.Context) {
 	lang := middleware.GetLangFromContext(c)
 
@@ -299,7 +299,7 @@ func (h *DevEnvironmentHandlers) DeleteEnvironment(c *gin.Context) {
 // @Param id path int true "Environment ID"
 // @Success 200 {object} object{env_vars=object} "Environment variables"
 // @Failure 400 {object} object{error=string} "Get failed"
-// @Router /dev-environments/{id}/env-vars [get]
+// @Router /environments/{id}/env-vars [get]
 func (h *DevEnvironmentHandlers) GetEnvironmentVars(c *gin.Context) {
 	lang := middleware.GetLangFromContext(c)
 
@@ -336,7 +336,7 @@ func (h *DevEnvironmentHandlers) GetEnvironmentVars(c *gin.Context) {
 // @Param env_vars body map[string]string true "Environment variables"
 // @Success 200 {object} object{message=string} "Update successful"
 // @Failure 400 {object} object{error=string} "Update failed"
-// @Router /dev-environments/{id}/env-vars [put]
+// @Router /environments/{id}/env-vars [put]
 func (h *DevEnvironmentHandlers) UpdateEnvironmentVars(c *gin.Context) {
 	lang := middleware.GetLangFromContext(c)
 
@@ -378,7 +378,7 @@ func (h *DevEnvironmentHandlers) UpdateEnvironmentVars(c *gin.Context) {
 // @Produce json
 // @Security BearerAuth
 // @Success 200 {object} object{images=[]object} "Available environment images"
-// @Router /dev-environments/available-images [get]
+// @Router /environments/available-images [get]
 func (h *DevEnvironmentHandlers) GetAvailableImages(c *gin.Context) {
 	lang := middleware.GetLangFromContext(c)
 
@@ -392,5 +392,31 @@ func (h *DevEnvironmentHandlers) GetAvailableImages(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"images": images,
+	})
+}
+
+// GetStats gets development environment statistics
+// @Summary Get development environment statistics
+// @Description Get statistics about development environments
+// @Tags Development Environment
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} object{stats=map[string]interface{}} "Environment statistics"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /environments/stats [get]
+func (h *DevEnvironmentHandlers) GetStats(c *gin.Context) {
+	lang := middleware.GetLangFromContext(c)
+
+	stats, err := h.devEnvService.GetStats()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": i18n.MapErrorToI18nKey(err, lang),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"stats": stats,
 	})
 }

@@ -16,7 +16,7 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-func SetupRoutes(r *gin.Engine, cfg *config.Config, authService services.AuthService, authHandlers *handlers.AuthHandlers, gitCredHandlers *handlers.GitCredentialHandlers, projectHandlers *handlers.ProjectHandlers, operationLogHandlers *handlers.AdminOperationLogHandlers, devEnvHandlers *handlers.DevEnvironmentHandlers, taskHandlers *handlers.TaskHandlers, taskConvHandlers *handlers.TaskConversationHandlers, taskConvResultHandlers *handlers.TaskConversationResultHandlers, taskExecLogHandlers *handlers.TaskExecutionLogHandlers, systemConfigHandlers *handlers.SystemConfigHandlers, staticFiles *embed.FS) {
+func SetupRoutes(r *gin.Engine, cfg *config.Config, authService services.AuthService, authHandlers *handlers.AuthHandlers, gitCredHandlers *handlers.GitCredentialHandlers, projectHandlers *handlers.ProjectHandlers, operationLogHandlers *handlers.AdminOperationLogHandlers, devEnvHandlers *handlers.DevEnvironmentHandlers, taskHandlers *handlers.TaskHandlers, taskConvHandlers *handlers.TaskConversationHandlers, taskConvResultHandlers *handlers.TaskConversationResultHandlers, taskExecLogHandlers *handlers.TaskExecutionLogHandlers, systemConfigHandlers *handlers.SystemConfigHandlers, dashboardHandlers *handlers.DashboardHandlers, staticFiles *embed.FS) {
 	r.Use(middleware.I18nMiddleware())
 	r.Use(middleware.ErrorHandlerMiddleware())
 
@@ -49,7 +49,7 @@ func SetupRoutes(r *gin.Engine, cfg *config.Config, authService services.AuthSer
 			admin.GET("/operation-stats", operationLogHandlers.GetOperationStats)
 		}
 
-		gitCreds := api.Group("/git-credentials")
+		gitCreds := api.Group("/credentials")
 		{
 			gitCreds.POST("", gitCredHandlers.CreateCredential)
 			gitCreds.GET("", gitCredHandlers.ListCredentials)
@@ -117,11 +117,12 @@ func SetupRoutes(r *gin.Engine, cfg *config.Config, authService services.AuthSer
 		api.POST("/task-conversations/:conversationId/execution/cancel", taskExecLogHandlers.CancelExecution)
 		api.POST("/task-conversations/:conversationId/execution/retry", taskExecLogHandlers.RetryExecution)
 
-		devEnvs := api.Group("/dev-environments")
+		devEnvs := api.Group("/environments")
 		{
 			devEnvs.POST("", devEnvHandlers.CreateEnvironment)
 			devEnvs.GET("", devEnvHandlers.ListEnvironments)
 			devEnvs.GET("/available-images", devEnvHandlers.GetAvailableImages)
+			devEnvs.GET("/stats", devEnvHandlers.GetStats)
 			devEnvs.GET("/:id", devEnvHandlers.GetEnvironment)
 			devEnvs.PUT("/:id", devEnvHandlers.UpdateEnvironment)
 			devEnvs.DELETE("/:id", devEnvHandlers.DeleteEnvironment)
@@ -129,10 +130,16 @@ func SetupRoutes(r *gin.Engine, cfg *config.Config, authService services.AuthSer
 			devEnvs.PUT("/:id/env-vars", devEnvHandlers.UpdateEnvironmentVars)
 		}
 
-		systemConfigs := api.Group("/system-configs")
+		systemConfigs := api.Group("/settings")
 		{
 			systemConfigs.GET("", systemConfigHandlers.ListAllConfigs)
 			systemConfigs.PUT("", systemConfigHandlers.BatchUpdateConfigs)
+		}
+
+		dashboard := api.Group("/dashboard")
+		{
+			dashboard.GET("/stats", dashboardHandlers.GetDashboardStats)
+			dashboard.GET("/recent-tasks", dashboardHandlers.GetRecentTasks)
 		}
 	}
 

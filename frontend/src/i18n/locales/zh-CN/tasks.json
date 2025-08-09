@@ -36,7 +36,13 @@
     "devEnvironmentHint": "可选择一个开发环境来执行此任务",
     "fetchingBranches": "正在从仓库获取分支...",
     "editDescription": "编辑任务信息和配置",
-    "createDescription": "创建新任务并配置需求"
+    "createDescription": "创建新任务并配置需求",
+    "helpTitle": "开始创建任务",
+    "helpDescription": "清晰地定义您的需求，选择合适的开发环境，并选择正确的分支以高效地开始工作。",
+    "editHelpTitle": "任务编辑提示",
+    "editHelpDescription": "您可以更新任务标题和其他基本信息。如需对需求进行重大更改，建议创建新的任务对话。",
+    "createFooterInfo": "请确保提供清晰的需求并选择正确的开发环境以获得最佳的任务执行效果。",
+    "editFooterInfo": "更改将立即保存。您可以从任务列表查看任务对话和执行日志。"
   },
   "validation": {
     "titleRequired": "请输入任务标题",
@@ -101,6 +107,9 @@
   "batch": {
     "updateStatus": "更新状态",
     "selectStatus": "选择状态"
+  },
+  "metrics": {
+    "total": "总任务数"
   },
   "errors": {
     "fetchBranchesFailed": "获取仓库分支失败",

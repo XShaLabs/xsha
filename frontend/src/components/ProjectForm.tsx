@@ -1,12 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -16,6 +9,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  FormCard,
+  FormCardContent,
+  FormCardDescription,
+  FormCardFooter,
+  FormCardFooterInfo,
+  FormCardHeader,
+  FormCardSeparator,
+  FormCardTitle,
+} from "@/components/forms/form-card";
 import { apiService } from "@/lib/api/index";
 import { logError } from "@/lib/errors";
 import { useTranslation } from "react-i18next";
@@ -31,7 +34,6 @@ import type {
 interface ProjectFormProps {
   project?: Project;
   onSubmit?: (project: Project) => void;
-  onCancel?: () => void;
 }
 
 interface CredentialOption {
@@ -41,7 +43,7 @@ interface CredentialOption {
   username: string;
 }
 
-export function ProjectForm({ project, onSubmit, onCancel }: ProjectFormProps) {
+export function ProjectForm({ project, onSubmit }: ProjectFormProps) {
   const { t } = useTranslation();
   const isEdit = !!project;
 
@@ -323,157 +325,158 @@ export function ProjectForm({ project, onSubmit, onCancel }: ProjectFormProps) {
   };
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle>
-          {isEdit ? t("projects.edit") : t("projects.create")}
-        </CardTitle>
-        <CardDescription>
-          {isEdit
-            ? t("projects.editDescription")
-            : t("projects.createDescription")}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit}>
+      <FormCard>
+        <FormCardHeader>
+          <FormCardTitle>
+            {isEdit ? t("projects.edit") : t("projects.create")}
+          </FormCardTitle>
+          <FormCardDescription>
+            {isEdit
+              ? t("projects.editDescription")
+              : t("projects.createDescription")}
+          </FormCardDescription>
+        </FormCardHeader>
+        <FormCardContent className="grid gap-4">
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-md p-4">
               <p className="text-red-700">{error}</p>
             </div>
           )}
 
-          <div className="grid grid-cols-1 gap-6">
-            <div className="flex flex-col gap-3">
-              <Label htmlFor="name">{t("projects.name")} *</Label>
-              <Input
-                id="name"
-                type="text"
-                value={formData.name}
-                onChange={(e) => handleInputChange("name", e.target.value)}
-                placeholder={t("projects.placeholders.name")}
-                className={errors.name ? "border-red-500" : ""}
-              />
-              {errors.name && (
-                <p className="text-sm text-red-500">{errors.name}</p>
-              )}
-            </div>
-
-            <div className="flex flex-col gap-3">
-              <Label htmlFor="description">{t("projects.description")}</Label>
-              <Input
-                id="description"
-                type="text"
-                value={formData.description}
-                onChange={(e) =>
-                  handleInputChange("description", e.target.value)
-                }
-                placeholder={t("projects.placeholders.description")}
-              />
-            </div>
-
-            <div className="flex flex-col gap-3">
-              <Label htmlFor="repo_url">{t("projects.repoUrl")} *</Label>
-              <div className="relative">
-                <Input
-                  id="repo_url"
-                  type="text"
-                  value={formData.repo_url}
-                  onChange={(e) =>
-                    handleInputChange("repo_url", e.target.value)
-                  }
-                  placeholder={t("projects.placeholders.repoUrl")}
-                  className={errors.repo_url ? "border-red-500" : ""}
-                />
-                {urlParsing && (
-                  <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
-                  </div>
-                )}
-              </div>
-              {errors.repo_url && (
-                <p className="text-sm text-red-500">{errors.repo_url}</p>
-              )}
-              {!errors.repo_url && formData.repo_url && (
-                <p className="text-sm text-gray-500">
-                  {t("projects.protocolAutoDetected")}:{" "}
-                  {formData.protocol.toUpperCase()}
-                </p>
-              )}
-            </div>
-
-            <div className="flex flex-col gap-3">
-              <Label htmlFor="credential_id">{t("projects.credential")}</Label>
-              {credentialsLoading ? (
-                <div className="text-sm text-gray-500">
-                  {t("common.loading")}
-                </div>
-              ) : (
-                <Select
-                  onValueChange={(value) =>
-                    handleInputChange(
-                      "credential_id",
-                      value ? Number(value) : undefined
-                    )
-                  }
-                  value={formData.credential_id?.toString()}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue
-                      placeholder={t("projects.placeholders.selectCredential")}
-                    />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {credentials.map((credential) => (
-                      <SelectItem
-                        key={credential.id}
-                        value={credential.id.toString()}
-                      >
-                        {credential.name} ({credential.type} -{" "}
-                        {credential.username})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-              <p className="text-sm text-gray-500">
-                {t("projects.credentialHelp")}
-              </p>
-
-              {credentialValidating && (
-                <div className="flex items-center space-x-2 text-sm text-blue-600">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
-                  <span>{t("projects.repository.validatingAccess")}</span>
-                </div>
-              )}
-
-              {accessValidated && !credentialValidating && (
-                <div className="text-sm text-green-600">
-                  ✓ {t("projects.repository.accessValidated")}
-                </div>
-              )}
-
-              {accessError && !credentialValidating && (
-                <div className="text-sm text-red-600">✗ {accessError}</div>
-              )}
-            </div>
-          </div>
-
-          <div className="flex justify-end gap-4">
-            {onCancel && (
-              <Button type="button" variant="outline" onClick={onCancel}>
-                {t("common.cancel")}
-              </Button>
+          <div className="flex flex-col gap-3">
+            <Label htmlFor="name">{t("projects.name")} *</Label>
+            <Input
+              id="name"
+              type="text"
+              value={formData.name}
+              onChange={(e) => handleInputChange("name", e.target.value)}
+              placeholder={t("projects.placeholders.name")}
+              className={errors.name ? "border-red-500" : ""}
+            />
+            {errors.name && (
+              <p className="text-sm text-red-500">{errors.name}</p>
             )}
-            <Button type="submit" disabled={loading}>
-              {loading
-                ? t("common.loading")
-                : isEdit
-                ? t("common.save")
-                : t("projects.create")}
-            </Button>
           </div>
-        </form>
-      </CardContent>
-    </Card>
+
+          <div className="flex flex-col gap-3">
+            <Label htmlFor="description">{t("projects.description")}</Label>
+            <Input
+              id="description"
+              type="text"
+              value={formData.description}
+              onChange={(e) =>
+                handleInputChange("description", e.target.value)
+              }
+              placeholder={t("projects.placeholders.description")}
+            />
+          </div>
+        </FormCardContent>
+        <FormCardSeparator />
+        <FormCardContent>
+          <div className="flex flex-col gap-3">
+            <Label htmlFor="repo_url">{t("projects.repoUrl")} *</Label>
+            <div className="relative">
+              <Input
+                id="repo_url"
+                type="text"
+                value={formData.repo_url}
+                onChange={(e) =>
+                  handleInputChange("repo_url", e.target.value)
+                }
+                placeholder={t("projects.placeholders.repoUrl")}
+                className={errors.repo_url ? "border-red-500" : ""}
+              />
+              {urlParsing && (
+                <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                </div>
+              )}
+            </div>
+            {errors.repo_url && (
+              <p className="text-sm text-red-500">{errors.repo_url}</p>
+            )}
+            {!errors.repo_url && formData.repo_url && (
+              <p className="text-sm text-gray-500">
+                {t("projects.protocolAutoDetected")}:{" "}
+                {formData.protocol.toUpperCase()}
+              </p>
+            )}
+          </div>
+        </FormCardContent>
+        <FormCardSeparator />
+        <FormCardContent>
+          <div className="flex flex-col gap-3">
+            <Label htmlFor="credential_id">{t("projects.credential")}</Label>
+            {credentialsLoading ? (
+              <div className="text-sm text-gray-500">
+                {t("common.loading")}
+              </div>
+            ) : (
+              <Select
+                onValueChange={(value) =>
+                  handleInputChange(
+                    "credential_id",
+                    value ? Number(value) : undefined
+                  )
+                }
+                value={formData.credential_id?.toString()}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue
+                    placeholder={t("projects.placeholders.selectCredential")}
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {credentials.map((credential) => (
+                    <SelectItem
+                      key={credential.id}
+                      value={credential.id.toString()}
+                    >
+                      {credential.name} ({credential.type} -{" "}
+                      {credential.username})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+            <p className="text-sm text-gray-500">
+              {t("projects.credentialHelp")}
+            </p>
+
+            {credentialValidating && (
+              <div className="flex items-center space-x-2 text-sm text-blue-600">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                <span>{t("projects.repository.validatingAccess")}</span>
+              </div>
+            )}
+
+            {accessValidated && !credentialValidating && (
+              <div className="text-sm text-green-600">
+                ✓ {t("projects.repository.accessValidated")}
+              </div>
+            )}
+
+            {accessError && !credentialValidating && (
+              <div className="text-sm text-red-600">✗ {accessError}</div>
+            )}
+          </div>
+        </FormCardContent>
+        <FormCardFooter>
+          <FormCardFooterInfo>
+            {isEdit 
+              ? t("projects.editDescription")
+              : t("projects.createDescription")}
+          </FormCardFooterInfo>
+          <Button type="submit" disabled={loading}>
+            {loading
+              ? t("common.loading")
+              : isEdit
+              ? t("common.save")
+              : t("projects.create")}
+          </Button>
+        </FormCardFooter>
+      </FormCard>
+    </form>
   );
 }

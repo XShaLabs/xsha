@@ -1,15 +1,16 @@
 {
   "welcome": "欢迎",
-  "title": "XSHA 仪表板",
+  "title": "概览",
+  "description": "您的AI驱动的Dev平台仪表板。",
   "projectManagement": {
     "title": "项目管理",
-    "description": "管理您的项目和Git凭据",
+    "description": "管理您的项目和凭据",
     "content": "创建、编辑和管理您的项目配置。"
   },
   "gitCredentials": {
-    "title": "Git 凭据",
-    "description": "管理您的Git访问凭据",
-    "content": "添加和配置Git仓库的访问凭据。",
+    "title": "凭据",
+    "description": "管理您的凭据",
+    "content": "添加和配置凭据。",
     "manage": "管理凭据"
   },
   "adminLogs": {
@@ -17,5 +18,27 @@
     "description": "查看系统操作和登录日志",
     "content": "监控系统活动、操作记录和登录情况。",
     "manage": "查看日志"
+  },
+  "metrics": {
+    "totalProjects": "项目",
+    "activeEnvironments": "环境",
+    "gitCredentials": "凭据",
+    "recentTasks": "任务"
+  },
+  "quickActions": {
+    "title": "快捷操作",
+    "description": "快速开始常见任务。",
+    "newProject": "新建项目",
+    "newProjectDesc": "创建一个项目来开始您的开发工作流。",
+    "newEnvironment": "新建环境",
+    "newEnvironmentDesc": "为您的团队设置一个新的开发环境。",
+    "addCredential": "添加凭据",
+    "addCredentialDesc": "添加凭据以访问您的代码仓库。"
+  },
+  "recentTask": {
+    "title": "最近任务",
+    "description": "最新的项目任务和状态。",
+    "empty": "暂无最近任务",
+    "emptyDesc": "当您开始使用平台时，您的最近任务将会在这里显示。"
   }
-} 
+}

@@ -28,14 +28,30 @@ func (r *loginLogRepository) Add(username, ip, userAgent, reason string, success
 	return r.db.Create(&loginLog).Error
 }
 
-func (r *loginLogRepository) GetLogs(username string, page, pageSize int) ([]database.LoginLog, int64, error) {
+func (r *loginLogRepository) GetLogs(username, ip *string, success *bool, startTime, endTime *string, page, pageSize int) ([]database.LoginLog, int64, error) {
 	var logs []database.LoginLog
 	var total int64
 
 	query := r.db.Model(&database.LoginLog{})
 
-	if username != "" {
-		query = query.Where("username = ?", username)
+	if username != nil && *username != "" {
+		query = query.Where("username LIKE ?", "%"+*username+"%")
+	}
+
+	if ip != nil && *ip != "" {
+		query = query.Where("ip LIKE ?", "%"+*ip+"%")
+	}
+
+	if success != nil {
+		query = query.Where("success = ?", *success)
+	}
+
+	if startTime != nil && *startTime != "" {
+		query = query.Where("login_time >= ?", *startTime+" 00:00:00")
+	}
+
+	if endTime != nil && *endTime != "" {
+		query = query.Where("login_time <= ?", *endTime+" 23:59:59")
 	}
 
 	if err := query.Count(&total).Error; err != nil {

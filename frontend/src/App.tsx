@@ -13,19 +13,22 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { Layout } from "@/components/Layout";
 import { LoginPage } from "@/pages/LoginPage";
 import { DashboardPage } from "@/pages/DashboardPage";
-import { AdminLogsPage } from "@/pages/AdminLogsPage";
+
+import { OperationLogsPage } from "@/pages/logs/OperationLogsPage";
+import { LoginLogsPage } from "@/pages/logs/LoginLogsPage";
+import { AuditStatsPage } from "@/pages/logs/AuditStatsPage";
 
 import ProjectListPage from "@/pages/projects/ProjectListPage";
 import ProjectCreatePage from "@/pages/projects/ProjectCreatePage";
 import ProjectEditPage from "@/pages/projects/ProjectEditPage";
 
-import DevEnvironmentListPage from "@/pages/dev-environments/DevEnvironmentListPage";
-import DevEnvironmentCreatePage from "@/pages/dev-environments/DevEnvironmentCreatePage";
-import DevEnvironmentEditPage from "@/pages/dev-environments/DevEnvironmentEditPage";
+import EnvironmentListPage from "@/pages/environments/EnvironmentListPage";
+import EnvironmentCreatePage from "@/pages/environments/EnvironmentCreatePage";
+import EnvironmentEditPage from "@/pages/environments/EnvironmentEditPage";
 
-import GitCredentialListPage from "@/pages/git-credentials/GitCredentialListPage";
-import GitCredentialCreatePage from "@/pages/git-credentials/GitCredentialCreatePage";
-import GitCredentialEditPage from "@/pages/git-credentials/GitCredentialEditPage";
+import CredentialListPage from "@/pages/credentials/CredentialListPage";
+import CredentialCreatePage from "@/pages/credentials/CredentialCreatePage";
+import CredentialEditPage from "@/pages/credentials/CredentialEditPage";
 
 import TaskListPage from "@/pages/tasks/TaskListPage";
 import TaskCreatePage from "@/pages/tasks/TaskCreatePage";
@@ -33,7 +36,7 @@ import TaskEditPage from "@/pages/tasks/TaskEditPage";
 import TaskConversationPage from "@/pages/tasks/TaskConversationPage";
 import TaskConversationGitDiffPage from "@/pages/tasks/TaskConversationGitDiffPage";
 
-import SystemConfigEditPage from "@/pages/system-configs/SystemConfigEditPage";
+import SettingsPage from "@/pages/settings/Settings";
 import TaskGitDiffPage from "@/pages/tasks/TaskGitDiffPage";
 
 import "./App.css";
@@ -106,62 +109,62 @@ function App() {
             />
 
             <Route
-              path="/dev-environments"
+              path="/environments"
               element={
                 <ProtectedRoute>
                   <Layout>
-                    <DevEnvironmentListPage />
+                    <EnvironmentListPage />
                   </Layout>
                 </ProtectedRoute>
               }
             />
             <Route
-              path="/dev-environments/create"
+              path="/environments/create"
               element={
                 <ProtectedRoute>
                   <Layout>
-                    <DevEnvironmentCreatePage />
+                    <EnvironmentCreatePage />
                   </Layout>
                 </ProtectedRoute>
               }
             />
             <Route
-              path="/dev-environments/:id/edit"
+              path="/environments/:id/edit"
               element={
                 <ProtectedRoute>
                   <Layout>
-                    <DevEnvironmentEditPage />
+                    <EnvironmentEditPage />
                   </Layout>
                 </ProtectedRoute>
               }
             />
 
             <Route
-              path="/git-credentials"
+              path="/credentials"
               element={
                 <ProtectedRoute>
                   <Layout>
-                    <GitCredentialListPage />
+                    <CredentialListPage />
                   </Layout>
                 </ProtectedRoute>
               }
             />
             <Route
-              path="/git-credentials/create"
+              path="/credentials/create"
               element={
                 <ProtectedRoute>
                   <Layout>
-                    <GitCredentialCreatePage />
+                    <CredentialCreatePage />
                   </Layout>
                 </ProtectedRoute>
               }
             />
             <Route
-              path="/git-credentials/:id/edit"
+              path="/credentials/:id/edit"
               element={
                 <ProtectedRoute>
                   <Layout>
-                    <GitCredentialEditPage />
+                    <CredentialEditPage />
                   </Layout>
                 </ProtectedRoute>
               }
@@ -228,23 +231,45 @@ function App() {
               }
             />
 
+
+
             <Route
-              path="/admin/logs"
+              path="/logs/operation-logs"
               element={
                 <ProtectedRoute>
                   <Layout>
-                    <AdminLogsPage />
+                    <OperationLogsPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/logs/login-logs"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <LoginLogsPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/logs/stats"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <AuditStatsPage />
                   </Layout>
                 </ProtectedRoute>
               }
             />
 
             <Route
-              path="/system-configs"
+              path="/settings"
               element={
                 <ProtectedRoute>
                   <Layout>
-                    <SystemConfigEditPage />
+                    <SettingsPage />
                   </Layout>
                 </ProtectedRoute>
               }

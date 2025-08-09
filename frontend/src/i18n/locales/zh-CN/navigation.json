@@ -2,13 +2,21 @@
   "dashboard": "仪表板",
   "projects": "项目管理",
   "tasks": "任务管理",
-  "gitCredentials": "Git凭据",
-  "dev_environments": "开发环境",
+  "gitCredentials": "凭据",
+  "environments": "环境",
   "adminLogs": "管理员日志",
-  "systemConfigs": "系统配置",
   "settings": "设置",
   "profile": "个人资料",
   "language": "语言",
   "help": "帮助",
-  "search": "搜索"
-} 
+  "search": "搜索",
+  "groups": {
+    "workspace": "工作区",
+    "logs": "日志"
+  },
+  "logs": {
+    "operationLogs": "操作",
+    "loginLogs": "登录",
+    "stats": "统计"
+  }
+}

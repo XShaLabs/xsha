@@ -37,9 +37,10 @@
   },
   "stats": {
     "total": "环境总数",
-    "cpu_total": "总CPU",
+    "docker_environments": "Docker环境",
+    "total_cpu": "总CPU",
+    "total_memory": "总内存",
     "cores": "核",
-    "memory_total": "总内存",
     "memory": "内存"
   },
   "types": {
@@ -76,12 +77,19 @@
     "cpu_limit_invalid": "CPU限制必须在0.1-16核之间",
     "memory_limit_invalid": "内存限制必须在128-32768MB之间"
   },
+  "createAndCustomize": "创建并配置环境",
+  "createHelpText": "设置开发环境，包括自定义 Docker 镜像、资源限制和环境变量。",
+  "editAndUpdate": "编辑并更新配置",
+  "editHelpText": "修改环境设置，调整资源限制和管理环境变量。",
+  "configurationHelp": "环境配置将在容器创建或重启时应用。",
   "env_vars": {
+    "title": "环境变量",
     "add_new": "添加环境变量",
     "current": "当前环境变量",
     "key": "变量名",
     "value": "变量值",
     "add": "添加",
+    "empty_message": "暂无环境变量配置，请在下方添加。",
     "key_required": "变量名不能为空",
     "key_exists": "变量名已存在"
   }

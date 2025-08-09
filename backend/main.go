@@ -63,6 +63,7 @@ func main() {
 	execLogRepo := repository.NewTaskExecutionLogRepository(dbManager.GetDB())
 	taskConvResultRepo := repository.NewTaskConversationResultRepository(dbManager.GetDB())
 	systemConfigRepo := repository.NewSystemConfigRepository(dbManager.GetDB())
+	dashboardRepo := repository.NewDashboardRepository(dbManager.GetDB())
 
 	// Initialize services
 	loginLogService := services.NewLoginLogService(loginLogRepo)
@@ -70,6 +71,7 @@ func main() {
 	authService := services.NewAuthService(tokenRepo, loginLogRepo, adminOperationLogService, systemConfigRepo, cfg)
 	gitCredService := services.NewGitCredentialService(gitCredRepo, projectRepo, cfg)
 	systemConfigService := services.NewSystemConfigService(systemConfigRepo)
+	dashboardService := services.NewDashboardService(dashboardRepo)
 
 	// Get git clone timeout from system config
 	gitCloneTimeout, err := systemConfigService.GetGitCloneTimeout()
@@ -102,6 +104,7 @@ func main() {
 	taskConvResultHandlers := handlers.NewTaskConversationResultHandlers(taskConvResultService)
 	taskExecLogHandlers := handlers.NewTaskExecutionLogHandlers(aiTaskExecutor)
 	systemConfigHandlers := handlers.NewSystemConfigHandlers(systemConfigService)
+	dashboardHandlers := handlers.NewDashboardHandlers(dashboardService)
 
 	// Set gin mode
 	if cfg.Environment == "production" {
@@ -118,7 +121,7 @@ func main() {
 	}
 
 	// Setup routes - Pass all handler instances including static files
-	routes.SetupRoutes(r, cfg, authService, authHandlers, gitCredHandlers, projectHandlers, adminOperationLogHandlers, devEnvHandlers, taskHandlers, taskConvHandlers, taskConvResultHandlers, taskExecLogHandlers, systemConfigHandlers, &StaticFiles)
+	routes.SetupRoutes(r, cfg, authService, authHandlers, gitCredHandlers, projectHandlers, adminOperationLogHandlers, devEnvHandlers, taskHandlers, taskConvHandlers, taskConvResultHandlers, taskExecLogHandlers, systemConfigHandlers, dashboardHandlers, &StaticFiles)
 
 	// Start scheduler
 	if err := schedulerManager.Start(); err != nil {

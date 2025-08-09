@@ -148,12 +148,16 @@ func (h *AuthHandlers) CurrentUserHandler(c *gin.Context) {
 
 // GetLoginLogsHandler gets login logs (requires admin privileges)
 // @Summary Get login logs
-// @Description Get system login log records, supporting filtering by username and pagination
+// @Description Get system login log records, supporting filtering by username, IP, success status, date range and pagination
 // @Tags Authentication
 // @Accept json
 // @Produce json
 // @Security BearerAuth
 // @Param username query string false "Username filter"
+// @Param ip query string false "IP address filter"
+// @Param success query boolean false "Success status filter"
+// @Param start_time query string false "Start time filter (YYYY-MM-DD)"
+// @Param end_time query string false "End time filter (YYYY-MM-DD)"
 // @Param page query int false "Page number, defaults to 1"
 // @Param page_size query int false "Page size, defaults to 20, maximum 100"
 // @Success 200 {object} object{message=string,logs=[]object,total=number,page=number,page_size=number,total_pages=number} "Login log list"
@@ -162,9 +166,11 @@ func (h *AuthHandlers) CurrentUserHandler(c *gin.Context) {
 func (h *AuthHandlers) GetLoginLogsHandler(c *gin.Context) {
 	lang := middleware.GetLangFromContext(c)
 
-	username := c.Query("username")
+	// Parse query parameters
 	page := 1
 	pageSize := 20
+	var username, ip, startTime, endTime *string
+	var success *bool
 
 	if p := c.Query("page"); p != "" {
 		if parsed, err := strconv.Atoi(p); err == nil && parsed > 0 {
@@ -178,7 +184,29 @@ func (h *AuthHandlers) GetLoginLogsHandler(c *gin.Context) {
 		}
 	}
 
-	logs, total, err := h.loginLogService.GetLogs(username, page, pageSize)
+	if u := c.Query("username"); u != "" {
+		username = &u
+	}
+
+	if i := c.Query("ip"); i != "" {
+		ip = &i
+	}
+
+	if s := c.Query("success"); s != "" {
+		if parsed, err := strconv.ParseBool(s); err == nil {
+			success = &parsed
+		}
+	}
+
+	if st := c.Query("start_time"); st != "" {
+		startTime = &st
+	}
+
+	if et := c.Query("end_time"); et != "" {
+		endTime = &et
+	}
+
+	logs, total, err := h.loginLogService.GetLogs(username, ip, success, startTime, endTime, page, pageSize)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": i18n.T(lang, "common.internal_error"),

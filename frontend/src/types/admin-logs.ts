@@ -54,6 +54,10 @@ export interface AdminOperationLogListParams {
 
 export interface LoginLogListParams {
   username?: string;
+  ip?: string;
+  success?: boolean;
+  start_time?: string;
+  end_time?: string;
   page?: number;
   page_size?: number;
 }
